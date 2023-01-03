@@ -1,6 +1,8 @@
 package at.codepunx.javaparser.services.impl;
 
 import at.codepunx.javaparser.app.AppParams;
+import at.codepunx.javaparser.parser.ParserException;
+import at.codepunx.javaparser.parser.impl.JavaParser;
 import at.codepunx.javaparser.services.JavaParserAppServiceInterface;
 import at.codepunx.javaparser.tokenizer.impl.JavaTokenizer;
 import at.codepunx.javaparser.tokenizer.TokenizerException;
@@ -27,11 +29,19 @@ public class JavaParserAppService implements JavaParserAppServiceInterface {
             System.exit(-2);
         }
 
-        JavaTokenizer tokenizer = new JavaTokenizer();
         try {
+            JavaTokenizer tokenizer = new JavaTokenizer();
             var tokens = tokenizer.tokenize( params.getSourceRootDirectory().toUri());
             log.info( "Tokenizer returned:\n" + tokens.stream().map(t -> t.toString()).collect(Collectors.joining("\n")) );
+
+            JavaParser parser = new JavaParser();
+            var rootNode = parser.parse( tokens );
+            log.info( "Parser returned:\n" + rootNode);
+
         } catch (TokenizerException e) {
+            log.error( e.getMessage() );
+            e.printStackTrace();
+        } catch (ParserException e) {
             log.error( e.getMessage() );
             e.printStackTrace();
         }
