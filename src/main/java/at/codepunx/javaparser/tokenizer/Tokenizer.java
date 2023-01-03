@@ -82,11 +82,9 @@ public class Tokenizer<T extends TokenTypeInterface> {
                 if ( possibleTokenTypes.isEmpty() ) {
                     if ( tokenTypesNowInvalid.isEmpty() )
                         throw new TokenizerNoPossibleTokenFoundException(currentText);
-                    if ( tokenTypesNowInvalid.size()>1 )
-                        tokenTypesNowInvalid.removeIf( t -> !t.isValidWithEnd(currentText).orElse(true) );
-                    if ( tokenTypesNowInvalid.size()>1 )
-                        throw new TokenizerMultipleTokensFoundException(currentText, List.copyOf(tokenTypesNowInvalid)) ;
-                    // final token found --> store it in the results
+//                    if ( tokenTypesNowInvalid.size()>1 )
+//                        System.err.println( "WARNING: multiple tokens found for '" + currentText + "': " + tokenTypesNowInvalid.stream().map(TokenTypeInterface::toString).collect(Collectors.joining(", ")));
+                    // final token found (take the first in the order)--> store it in the results
                     addToken( tokenTypesNowInvalid.get(0), currentText.substring(0, currentText.length() - 1) );
                     currentTextBuilder = new StringBuilder();
                     skipNextReadChar = true;
@@ -94,7 +92,7 @@ public class Tokenizer<T extends TokenTypeInterface> {
 
                 // 3. check EndsWith
                 if ( possibleTokenTypes.size()==1 ) {
-                    if ( possibleTokenTypes.get(0).isValidWithEnd(currentText).orElse(false) )
+                    if ( possibleTokenTypes.get(0).isValid(currentText).orElse(false) )
                     {
                         // final token found --> store it in the results
                         addToken(possibleTokenTypes.get(0), currentText);

@@ -7,8 +7,6 @@ import at.codepunx.javaparser.tokenizer.TokenizerException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.stream.Collectors;
-
 @Service
 @Slf4j
 public class JavaParserAppService implements JavaParserAppServiceInterface {
@@ -30,7 +28,7 @@ public class JavaParserAppService implements JavaParserAppServiceInterface {
         JavaTokenizer tokenizer = new JavaTokenizer();
         try {
             var tokens = tokenizer.tokenize( params.getSourceRootDirectory().toUri());
-            log.info( "Tokenizer returned:\n" + tokens.stream().map(t -> t.toString()).collect(Collectors.joining("\n")) );
+            log.info( String.format("Tokenizer returned %d tokens.", tokens.size()) );
         } catch (TokenizerException e) {
             log.error( e.getMessage() );
             e.printStackTrace();
