@@ -9,10 +9,10 @@ public class TokenizerMultipleTokensFoundException extends TokenizerException {
     @Getter
     private final String currentText;
     @Getter
-    private final List<JavaTokenType> possibleTokens;
+    private final List<TokenTypeInterface> possibleTokens;
 
-    public TokenizerMultipleTokensFoundException(String currentText, List<JavaTokenType> possibleTokens) {
-        super("Multiple tokens found for '" + currentText + "': " + possibleTokens.stream().map(JavaTokenType::toString).collect(Collectors.joining(", ")));
+    public TokenizerMultipleTokensFoundException(String currentText, List<TokenTypeInterface> possibleTokens) {
+        super("Multiple tokens found for '" + currentText + "': " + possibleTokens.stream().map(TokenTypeInterface::toString).collect(Collectors.joining(", ")));
         this.currentText = currentText;
         this.possibleTokens = possibleTokens;
     }

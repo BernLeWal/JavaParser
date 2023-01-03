@@ -1,9 +1,11 @@
-package at.codepunx.javaparser.tokenizer;
+package at.codepunx.javaparser.tokenizer.impl;
 
+
+import at.codepunx.javaparser.tokenizer.TokenTypeInterface;
 
 import java.util.Optional;
 
-public enum JavaTokenType {
+public enum JavaTokenType implements TokenTypeInterface {
     WHITESPACE(false, " \t\n\r", null, " \t\n\r"),
 
     CONST_STRING( true, "\"", "\""),

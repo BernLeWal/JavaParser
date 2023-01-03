@@ -1,7 +1,6 @@
 package at.codepunx.javaparser.tokenizer;
 
 import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
 import java.net.URI;
@@ -12,27 +11,25 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Slf4j
-public class JavaTokenizer {
-
-    // input
+public class Tokenizer<T extends TokenTypeInterface> {
     @Getter
-    private final JavaTokenType[] allTokenTypes = JavaTokenType.values();
-
-    // output
+    protected final T[] allTokenTypes;
     @Getter
-    private ArrayList<JavaToken> tokens = new ArrayList<>();
+    protected ArrayList<Token<T>> tokens = new ArrayList<>();
 
-    // intermediate variables during tokenizing
+
     private BufferedReader reader;
 
+    public Tokenizer(T[] allTokenTypes) {
+        this.allTokenTypes = allTokenTypes;
+    }
 
-    public ArrayList<JavaToken> tokenize(InputStream input) throws TokenizerException {
+    public ArrayList<Token<T>> tokenize(InputStream input) throws TokenizerException {
         doTokenize(input);
         return tokens;
     }
 
-    public ArrayList<JavaToken> tokenize(URI uri) throws TokenizerException {
+    public ArrayList<Token<T>> tokenize(URI uri) throws TokenizerException {
         try {
             return tokenize(uri.toURL().openStream());
         } catch (IOException e) {
@@ -40,9 +37,11 @@ public class JavaTokenizer {
         }
     }
 
-    public ArrayList<JavaToken> tokenize(String text) throws TokenizerException {
+    public ArrayList<Token<T>> tokenize(String text) throws TokenizerException {
         return tokenize(new ByteArrayInputStream(text.getBytes()));
     }
+
+
 
     private void doTokenize(InputStream input) throws TokenizerException {
         tokens = new ArrayList<>();
@@ -50,7 +49,7 @@ public class JavaTokenizer {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
             this.reader = reader;
             StringBuilder currentTextBuilder = new StringBuilder();
-            List<JavaTokenType> possibleTokenTypes = new LinkedList<>();
+            List<T> possibleTokenTypes = new LinkedList<>();
 
             char currentChar = (char)0;
             boolean skipNextReadChar = false;
@@ -71,7 +70,7 @@ public class JavaTokenizer {
                 // 1. check StartsWith
                 if ( currentText.length()==1 ) {
                     // started with the first character --> find all possible tokens
-                    possibleTokenTypes = Arrays.stream(allTokenTypes).filter( t -> t.isValid(currentText).orElse(true) ).collect(Collectors.toCollection(LinkedList::new));
+                    possibleTokenTypes = Arrays.stream(allTokenTypes).filter(t -> t.isValid(currentText).orElse(true) ).collect(Collectors.toCollection(LinkedList::new));
                     if (possibleTokenTypes.isEmpty())
                         throw new TokenizerNoPossibleTokenFoundException(currentText);
                 }
@@ -86,7 +85,7 @@ public class JavaTokenizer {
                     if ( tokenTypesNowInvalid.size()>1 )
                         tokenTypesNowInvalid.removeIf( t -> !t.isValidWithEnd(currentText).orElse(true) );
                     if ( tokenTypesNowInvalid.size()>1 )
-                        throw new TokenizerMultipleTokensFoundException(currentText, tokenTypesNowInvalid);
+                        throw new TokenizerMultipleTokensFoundException(currentText, List.copyOf(tokenTypesNowInvalid)) ;
                     // final token found --> store it in the results
                     addToken( tokenTypesNowInvalid.get(0), currentText.substring(0, currentText.length() - 1) );
                     currentTextBuilder = new StringBuilder();
@@ -105,20 +104,18 @@ public class JavaTokenizer {
             }
 
         } catch (IOException e) {
-            log.error("Failed to read from file! " + e);
+            throw new TokenizerException( e.getMessage() );
         } finally {
             this.reader = null;
         }
     }
 
-    private void addToken(JavaTokenType possibleTokenType, String currentText) {
-        if ( possibleTokenType.equals(JavaTokenType.WHITESPACE) && currentText.equals(" "))
-            return; // skip extra tokens for the single space char here
-        JavaToken token = new JavaToken(possibleTokenType, currentText);
-        tokens.add(token);
-        System.out.println( token );
-    }
 
+    protected Token<T> addToken(T possibleTokenType, String currentText) {
+        Token<T> token = new Token<>(possibleTokenType, currentText);
+        tokens.add(token);
+        return token;
+    }
 
     private char readChar() {
         try {
