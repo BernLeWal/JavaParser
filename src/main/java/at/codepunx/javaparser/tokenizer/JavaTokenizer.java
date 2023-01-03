@@ -7,7 +7,10 @@ import java.io.*;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class JavaTokenizer {
@@ -46,8 +49,8 @@ public class JavaTokenizer {
 
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
             this.reader = reader;
-            StringBuilder currentText = new StringBuilder();
-            LinkedList<JavaTokenType> possibleTokenTypes = new LinkedList<>();
+            StringBuilder currentTextBuilder = new StringBuilder();
+            List<JavaTokenType> possibleTokenTypes = new LinkedList<>();
 
             char currentChar = (char)0;
             boolean skipNextReadChar = false;
@@ -58,58 +61,45 @@ public class JavaTokenizer {
                     currentChar = readChar();
                 if ( currentChar==(char)-1)
                     break;
-                currentText.append(currentChar);
+                currentTextBuilder.append(currentChar);
+                final String currentText = currentTextBuilder.toString();
 
                 // for debugging purposes:
-                //if ( currentText.toString().equals("0:") )
+                //if ( currentText.equals("/") )
                 //    System.out.println("*");
 
-                if ( possibleTokenTypes.isEmpty() ) {
-                    // find possible tokens
-                    for (JavaTokenType possibleTokenType : allTokenTypes) {
-                        if (possibleTokenType.isFirstChar(currentChar))
-                            possibleTokenTypes.add(possibleTokenType);
-                    }
+                // 1. check StartsWith
+                if ( currentText.length()==1 ) {
+                    // started with the first character --> find all possible tokens
+                    possibleTokenTypes = Arrays.stream(allTokenTypes).filter( t -> t.isValid(currentText).orElse(true) ).collect(Collectors.toCollection(LinkedList::new));
                     if (possibleTokenTypes.isEmpty())
-                        throw new TokenizerNoPossibleTokenFoundException(currentText.toString());
-                } else {
-                    // check if one of possible tokens already done
-                    for (JavaTokenType possibleTokenType : possibleTokenTypes ) {
-                        if (possibleTokenType.isLastChar(currentChar)) {
-                            // final token found --> store it in the results
-                            addToken(possibleTokenType, currentText.toString());
-                            currentText = new StringBuilder();
-                            possibleTokenTypes = new LinkedList<>();
-                            break;
-                        }
-                    }
+                        throw new TokenizerNoPossibleTokenFoundException(currentText);
+                }
 
-                    if ( possibleTokenTypes.size()>1 ) {
-                        // check which possible tokens to take out due to invalid further chars
-                        for (int i = 0; i< possibleTokenTypes.size(); i++) {
-                            JavaTokenType possibleTokenType = possibleTokenTypes.get(i);
-                            if ( !possibleTokenType.isValidChar(currentChar) && possibleTokenType.hasLastChar() ) {
-                                possibleTokenTypes.remove(i--); // take out, because char is invalid
-                            }
-                        }
-                        if (possibleTokenTypes.isEmpty())
-                            throw new TokenizerNoPossibleTokenFoundException(currentText.toString());
-                    }
+                // 2. check valid chars
+                var tokenTypesNowInvalid = possibleTokenTypes.stream().filter( t -> !t.isValid(currentText).orElse(true) ).collect(Collectors.toCollection(LinkedList::new));
+                possibleTokenTypes.removeIf( t -> !t.isValid(currentText).orElse(true) );
 
-                    if ( possibleTokenTypes.size()>=1 ) {
-                        // read the current token until the end
-//                        JavaTokenType currentTokenType = possibleTokenTypes.getFirst();
-                        for (int i = 0; i< possibleTokenTypes.size(); i++) {
-                            JavaTokenType currentTokenType = possibleTokenTypes.get(i);
-                            if (!currentTokenType.isValidChar(currentChar)) {
-                                // current token type ends here --> store it in the results
-                                addToken(currentTokenType, currentText.substring(0, currentText.length() - 1));
-                                currentText = new StringBuilder();
-                                skipNextReadChar = true;
-                                possibleTokenTypes = new LinkedList<>();
-                                break;
-                            }
-                        }
+                if ( possibleTokenTypes.isEmpty() ) {
+                    if ( tokenTypesNowInvalid.isEmpty() )
+                        throw new TokenizerNoPossibleTokenFoundException(currentText);
+                    if ( tokenTypesNowInvalid.size()>1 )
+                        tokenTypesNowInvalid.removeIf( t -> !t.isValidWithEnd(currentText).orElse(true) );
+                    if ( tokenTypesNowInvalid.size()>1 )
+                        throw new TokenizerMultipleTokensFoundException(currentText, tokenTypesNowInvalid);
+                    // final token found --> store it in the results
+                    addToken( tokenTypesNowInvalid.get(0), currentText.substring(0, currentText.length() - 1) );
+                    currentTextBuilder = new StringBuilder();
+                    skipNextReadChar = true;
+                }
+
+                // 3. check EndsWith
+                if ( possibleTokenTypes.size()==1 ) {
+                    if ( possibleTokenTypes.get(0).isValidWithEnd(currentText).orElse(false) )
+                    {
+                        // final token found --> store it in the results
+                        addToken(possibleTokenTypes.get(0), currentText);
+                        currentTextBuilder = new StringBuilder();
                     }
                 }
             }
@@ -124,7 +114,9 @@ public class JavaTokenizer {
     private void addToken(JavaTokenType possibleTokenType, String currentText) {
         if ( possibleTokenType.equals(JavaTokenType.WHITESPACE) && currentText.equals(" "))
             return; // skip extra tokens for the single space char here
-        tokens.add(new JavaToken(possibleTokenType, currentText));
+        JavaToken token = new JavaToken(possibleTokenType, currentText);
+        tokens.add(token);
+        System.out.println( token );
     }
 
 

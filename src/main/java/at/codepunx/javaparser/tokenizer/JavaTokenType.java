@@ -1,20 +1,23 @@
 package at.codepunx.javaparser.tokenizer;
 
+
+import java.util.Optional;
+
 public enum JavaTokenType {
-    WHITESPACE(" \t\n\r", " \t\n\r", null),
+    WHITESPACE(false, " \t\n\r", null, " \t\n\r"),
 
-    CONST_STRING("\"", null, "\""),
-    // TODO CONST_STRING_MULTILINE
-    CONST_CHAR("'", null, "'"),
-    CONST_INT( "0123456789", "0123456789"),
-    CONST_LONG( "0123456789", "0123456789", "Ll"),
-    CONST_DOUBLE( "0123456789.", "0123456789."),
-    CONST_FLOAT( "0123456789.", "0123456789.e-+", "Ff"),
+    CONST_STRING( true, "\"", "\""),
+    CONST_STRING_MULTILINE( true, "\"\"\"", "\"\"\""),
+    CONST_CHAR( true, "'", "'"),
 
-    NAME_OR_KEYWORD( "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_", "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789"),
+    CONST_NUMBER( false, "0123456789", null, "0123456789.e-+"), // TODO . as valid first character
+    CONST_LONG( false, "0123456789", "Ll", "0123456789"),
+    CONST_FLOAT( false, "0123456789", "Ff", "0123456789.e-+"), // TODO . as valid first character
 
-    COMMENT_LINE( "/", null, "\n\r"), // TODO //
-    COMMENT_BLOCK( "/", null, "/"), // TODO /* ... */
+    NAME_OR_KEYWORD( false, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_", null,"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789"),
+
+    COMMENT_LINE( true, "//", "\n"), // TODO only \r or \r\n
+    COMMENT_BLOCK( true, "/*", "*/"),
 
     CODE_BLOCK_START("{"),
     CODE_BLOCK_END("}"),
@@ -32,6 +35,7 @@ public enum JavaTokenType {
     EXPR_DIV( "/"),
     EXPR_GREATER( ">"),
     EXPR_SMALLER( "<"),
+    EXPR_LAMBDA( "->"),
 
     DOUBLE_POINT(":"),
     SEMIKOLON(";"),
@@ -41,48 +45,131 @@ public enum JavaTokenType {
     ANNOTATION("@")
     ;
 
-    private final String firstCharIn;
-    private final String validCharIn;
-    private final String lastCharIn;
 
-    JavaTokenType(String firstCharIn, String validCharIn, String lastCharIn) {
-        this.firstCharIn = firstCharIn;
-        this.validCharIn = validCharIn;
-        this.lastCharIn = lastCharIn;
+    private final boolean exactMatch;
+    private final String startsWith;
+    private final String endsWith;  // null...all chars allowed (don't check the end); ""...no further chars allowed after startsWith
+    private final String validChars; // null...all chars allowed (don't check validChars); ""...no further chars allowed after startsWith
+
+
+    JavaTokenType(String startsWith) {
+        this.startsWith = startsWith;
+        this.exactMatch = true;
+        this.endsWith = "";   //no further chars (than the first one) allowed
+        this.validChars = "";   //no further chars (than the first one) allowed
     }
 
-    JavaTokenType(String firstCharIn, String validCharIn) {
-        this.firstCharIn = firstCharIn;
-        this.validCharIn = validCharIn;
-        this.lastCharIn = null;
+    JavaTokenType(boolean exactMatch, String startsWith, String endsWith) {
+        this.exactMatch = exactMatch;
+        this.startsWith = startsWith;
+        this.endsWith = endsWith;
+        this.validChars = null; // all chars allowed in between start and end
     }
 
-    JavaTokenType(String firstCharIn) {
-        this.firstCharIn = firstCharIn;
-        this.validCharIn = "";  //no further chars (than the first one) allowed
-        this.lastCharIn = firstCharIn;
+    JavaTokenType(boolean exactMatch, String startsWith, String endsWith, String validChars) {
+        this.exactMatch = exactMatch;
+        this.startsWith = startsWith;
+        this.endsWith = endsWith;
+        this.validChars = validChars; // all chars allowed in between start and end
     }
 
 
-    public boolean isFirstChar(char c) {
-        if ( firstCharIn == null )
-            return true;    // all chars are possible
-        return firstCharIn.indexOf(c)>=0;
+    /**
+     *
+     * @param s current string
+     * @return true...valid; false...invalid; empty...need more data
+     */
+    public Optional<Boolean> isValid(String s ) {
+        if ( s==null )
+            return Optional.empty();   // invalid value
+        if ( s.equals("") )
+            return Optional.empty();
+
+        // check startWith
+        if ( this.startsWith!=null ) {
+            if (this.exactMatch) {
+                if (s.length() <= this.startsWith.length())
+                    if ( this.startsWith.startsWith(s) )
+                        return Optional.empty();
+                    else
+                        return Optional.of(false);
+                else if (!s.startsWith(this.startsWith))
+                    return Optional.of( false );
+                if ( s.length() >= this.startsWith.length() )
+                    s = s.substring(this.startsWith.length());
+            } else {
+                if (this.startsWith.indexOf(s.substring(0, 1)) < 0)
+                    return Optional.of(false);
+                s = s.substring(1);
+            }
+        }
+
+        // check validChars
+        if ( validChars == null )
+            return Optional.of(true);    // all chars are possible
+        if ( validChars.equals("") )
+            return Optional.of(s.equals(""));    // no further chars are allowed
+        for( char c : s.toCharArray() ) {
+            if ( validChars.indexOf(c)<0 )
+                return Optional.of(false);
+        }
+
+        return Optional.of(true);
     }
 
-    public boolean isValidChar(char c) {
-        if ( validCharIn == null )
-            return true;    // all chars are possible
-        return validCharIn.indexOf(c)>=0;
+    public Optional<Boolean> isValidWithEnd( String s ) {
+        // check endsWith
+        if ( this.endsWith==null )
+            return Optional.empty();
+
+        if ( this.startsWith!=null ) {
+            if (this.exactMatch) {
+                if (s.length() < this.startsWith.length() )
+                    return Optional.empty();
+                s = s.substring(this.startsWith.length());
+            } else {
+                if (s.length() < 1 )
+                    return Optional.empty();
+                s = s.substring(1);
+            }
+        }
+
+        if (this.endsWith.equals("")) // no more chars allowed
+            return Optional.of( s.equals("") );
+
+        if (this.exactMatch) {
+            if (s.length() == this.endsWith.length())
+                return Optional.of( s.equals(this.endsWith) );
+            else if (s.length() > this.endsWith.length()) {
+                if (!s.endsWith(this.endsWith))
+                    return Optional.of(false );
+                s = s.substring(0, s.length() - this.endsWith.length());
+            }
+            else
+                return Optional.empty();
+        } else {
+            if (s.length() == 1)
+                return Optional.of( this.endsWith.indexOf(s.substring(0, 1)) >= 0 );
+            else if (s.length() > 1) {
+                if (this.endsWith.indexOf(s.substring(s.length() - 1)) < 0)
+                    return Optional.of( false );
+                s = s.substring(0, s.length() - 1);
+            }
+            else
+                return Optional.empty();
+        }
+
+        // check validChars
+        if ( validChars == null )
+            return Optional.of(true);    // all chars are possible
+        if ( validChars.equals("") )
+            return Optional.of(s.equals(""));    // no further chars are allowed
+        for( char c : s.toCharArray() ) {
+            if ( validChars.indexOf(c)<0 )
+                return Optional.of(false);
+        }
+
+        return Optional.of(true);
     }
 
-    public boolean isLastChar(char c) {
-        if ( lastCharIn == null )
-            return false;   // token has no last-char
-        return lastCharIn.indexOf(c)>=0;
-    }
-
-    public boolean hasLastChar() {
-        return lastCharIn != null;
-    }
 }
