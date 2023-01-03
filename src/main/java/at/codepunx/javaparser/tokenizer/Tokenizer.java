@@ -15,7 +15,7 @@ public class Tokenizer<T extends TokenTypeInterface> {
     @Getter
     protected final T[] allTokenTypes;
     @Getter
-    protected ArrayList<Token<T>> tokens = new ArrayList<>();
+    protected List<Token<T>> tokens = new ArrayList<>();
 
 
     private BufferedReader reader;
@@ -24,12 +24,12 @@ public class Tokenizer<T extends TokenTypeInterface> {
         this.allTokenTypes = allTokenTypes;
     }
 
-    public ArrayList<Token<T>> tokenize(InputStream input) throws TokenizerException {
+    public List<Token<T>> tokenize(InputStream input) throws TokenizerException {
         doTokenize(input);
         return tokens;
     }
 
-    public ArrayList<Token<T>> tokenize(URI uri) throws TokenizerException {
+    public List<Token<T>> tokenize(URI uri) throws TokenizerException {
         try {
             return tokenize(uri.toURL().openStream());
         } catch (IOException e) {
@@ -37,7 +37,7 @@ public class Tokenizer<T extends TokenTypeInterface> {
         }
     }
 
-    public ArrayList<Token<T>> tokenize(String text) throws TokenizerException {
+    public List<Token<T>> tokenize(String text) throws TokenizerException {
         return tokenize(new ByteArrayInputStream(text.getBytes()));
     }
 
