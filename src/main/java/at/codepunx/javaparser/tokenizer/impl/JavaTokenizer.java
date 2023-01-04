@@ -13,7 +13,7 @@ public class JavaTokenizer extends Tokenizer<JavaTokenType> {
 
     @Override
     protected Token<JavaTokenType> addToken(JavaTokenType possibleTokenType, String currentText) {
-        if ( possibleTokenType.equals(JavaTokenType.WHITESPACE) && currentText.equals(" "))
+        if ( possibleTokenType.equals(JavaTokenType.WHITESPACE) && !currentText.contains("\n"))
             return null; // skip extra tokens for the single space char here
 
         var token = super.addToken(possibleTokenType, currentText);

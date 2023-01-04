@@ -32,7 +32,8 @@ public class JavaParserAppService implements JavaParserAppServiceInterface {
         try {
             JavaTokenizer tokenizer = new JavaTokenizer();
             var tokens = tokenizer.tokenize( params.getSourceRootDirectory().toUri());
-            log.info( "Tokenizer returned:\n" + tokens.stream().map(t -> t.toString()).collect(Collectors.joining("\n")) );
+            log.info( String.format("Tokenizer returned %d tokens", tokens.size()) );
+            //log.info( tokens.stream().map(t -> t.toString()).collect(Collectors.joining("\n")) );
 
             JavaParser parser = new JavaParser();
             var rootNode = parser.parse( tokens );
