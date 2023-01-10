@@ -14,6 +14,7 @@ public enum JavaTokenType implements TokenTypeInterface {
     CONST_STRING_MULTILINE( s -> TokenizerValidators.encapsulatedIn("\"\"\"", "\"\"\"", s)),
     CONST_CHAR( s -> TokenizerValidators.encapsulatedIn( "'", "'",s)),
 
+    COMMENT_JAVADOC( s -> TokenizerValidators.encapsulatedIn("/**", "*/", s )),
     COMMENT_LINE( s -> TokenizerValidators.encapsulatedIn( "//", "\n",s)), // TODO only \r or \r\n
     COMMENT_BLOCK( s -> TokenizerValidators.encapsulatedIn("/*", "*/",s)),
 

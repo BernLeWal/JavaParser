@@ -5,7 +5,7 @@ import lombok.Setter;
 
 import java.util.*;
 
-public class TokenReader<T extends TokenTypeInterface> {
+public class TokenReader<T extends TokenTypeInterface> implements Cloneable {
 
     private final List<Token<T>> tokens;
     private final ListIterator<Token<T>> it;
@@ -22,6 +22,26 @@ public class TokenReader<T extends TokenTypeInterface> {
         this.tokens = tokens;
         this.it = tokens.listIterator();
     }
+
+    public TokenReader(TokenReader<T> that) {
+        this.tokens = that.tokens;
+        this.it = tokens.listIterator(that.it.nextIndex());
+        this.skipWhitespaceTokens = that.skipWhitespaceTokens;
+        this.whitespaceTokenTypes = that.whitespaceTokenTypes;
+    }
+
+    @Override
+    public Object clone() {
+        return new TokenReader<>(this);
+    }
+
+    public void revertTo(TokenReader<T> that ) {       // TODO
+        int index = that.it.hasNext() ? (that.it.nextIndex()-1) : ( that.it.hasPrevious() ? (that.it.previousIndex()+1) : 0);
+        while( this.it.previousIndex() > index ) {
+            this.it.previous();
+        }
+    }
+
 
     public boolean hasNext() {
         return it.hasNext();
