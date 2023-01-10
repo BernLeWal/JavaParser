@@ -37,7 +37,7 @@ public enum JavaTokenType implements TokenTypeInterface {
 
     KEYWORD( s->TokenizerValidators.inList( JavaLanguage.KEYWORDS, s )),
     PRIMITIVE( s->TokenizerValidators.inList( JavaLanguage.PRIMITIVES, s)),
-    NAME( s -> TokenizerValidators.charsIn( "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_", "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789", s)),
+    IDENTIFIER(s -> TokenizerValidators.charsIn( "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_", "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789", s)),
 
     CONST_NUMBER( s -> TokenizerValidators.charsIn("0123456789", "0123456789.e-+", s)  ), // TODO . as valid first character
 //    CONST_LONG( false, "0123456789", "Ll", "0123456789"),
