@@ -5,9 +5,11 @@ import at.codepunx.javaparser.parser.grammar.CompilationUnit;
 import at.codepunx.javaparser.tokenizer.Token;
 import at.codepunx.javaparser.tokenizer.TokenReader;
 import at.codepunx.javaparser.tokenizer.impl.JavaTokenType;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 
+@Slf4j
 public class JavaParser {
 
 
@@ -21,6 +23,7 @@ public class JavaParser {
         try {
             return new CompilationUnit(javaFileName, reader);
         } catch (ParseException e) {
+            log.error( e.toString() );
             throw new ParseException(e.getMessage());
         }
     }
