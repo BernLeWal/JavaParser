@@ -42,6 +42,10 @@ public abstract class Node implements NodeInterface, Composable<Node>, HasValue<
         child.setParent(this);
     }
 
+    public int getChildCount() {
+        return comments.size() + children.size();
+    }
+
     @Override
     public boolean removeChild(Node child) {
         boolean removed;
@@ -70,6 +74,7 @@ public abstract class Node implements NodeInterface, Composable<Node>, HasValue<
         addChild( func.apply(reader) );
     }
 
+
     protected boolean optional(TokenReader<JavaTokenType> reader, Function<TokenReader<JavaTokenType>, Node> func) {
         TokenReader<JavaTokenType> backupReader = (TokenReader<JavaTokenType>)reader.clone();
         try {
@@ -83,7 +88,7 @@ public abstract class Node implements NodeInterface, Composable<Node>, HasValue<
     }
 
     protected int multiple(TokenReader<JavaTokenType> reader, Consumer<TokenReader<JavaTokenType>> func) throws ParseException {
-        int startChildCount = children.size() + comments.size();
+        int startChildCount = getChildCount();
         int childCount;
         do {
             childCount = children.size() + comments.size();
@@ -95,8 +100,8 @@ public abstract class Node implements NodeInterface, Composable<Node>, HasValue<
                 reader.revertTo(backupReader);
                 break;
             }
-        } while ( childCount < (children.size() + comments.size()) );
-        return children.size() + comments.size() - startChildCount;
+        } while ( childCount < getChildCount() );
+        return getChildCount() - startChildCount;
     }
 
 

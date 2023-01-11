@@ -39,4 +39,25 @@ public class JavaLanguage {
 
         public String value() { return value; }
     }
+
+    public enum Final implements KeywordTypeInterface {
+        FINAL( "final" );
+
+        final String value;
+
+        Final(String value) { this.value = value; }
+
+        public String value() { return value; }
+    }
+
+    public enum Synchronized implements KeywordTypeInterface {
+        SYNCHRONIZED( "synchronized" );
+
+        final String value;
+
+        Synchronized(String value) { this.value = value; }
+
+        public String value() { return value; }
+    }
+
 }

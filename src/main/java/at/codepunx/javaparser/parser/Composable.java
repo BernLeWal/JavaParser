@@ -2,7 +2,7 @@ package at.codepunx.javaparser.parser;
 
 import java.util.List;
 
-public interface Composable<T> {
+public interface Composable<T extends NodeInterface> {
     T getParent();
     void setParent(T parent);
 
