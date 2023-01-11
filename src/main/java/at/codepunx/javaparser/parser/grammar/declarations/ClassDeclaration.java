@@ -29,8 +29,9 @@ public class ClassDeclaration extends Node {
     */
     public ClassDeclaration(TokenReader<JavaTokenType> reader) throws ParseException {
         optional(reader, JavadocComment::new);
-        visibility = new ModifierDeclaration<>(JavaLanguage.Visibility.class, reader).getValue();
-        abstractModifier = new ModifierDeclaration<>(JavaLanguage.Abstract.class, reader).getValue();
+
+        setAttribute(JavaLanguage.Visibility.class.getSimpleName(), new ModifierDeclaration<>(JavaLanguage.Visibility.class, reader));
+        setAttribute(JavaLanguage.Abstract.class.getSimpleName(), new ModifierDeclaration<>(JavaLanguage.Abstract.class, reader));
 
         mandatoryToken( reader, JavaTokenType.KEYWORD, "class");
         setValue( mandatoryToken( reader, JavaTokenType.IDENTIFIER));
@@ -38,8 +39,7 @@ public class ClassDeclaration extends Node {
         optional(reader, ExtendsDeclaration::new);
         if (optional(reader, ImplementsDeclaration::new)) {
             multiple(reader, r -> {
-                if (!optional(reader, r1 -> new ImplementsDeclaration(false, r1)))
-                    throw new ParseException("No more interfaces implemented");
+                optional(reader, r1 -> new ImplementsDeclaration(false, r1));
             });
         }
 
@@ -71,25 +71,16 @@ public class ClassDeclaration extends Node {
 
     @Getter
     @Setter
-    private JavaLanguage.Visibility visibility;
-
-    private JavaLanguage.Abstract abstractModifier;
-
-    @Getter
     private ExtendsDeclaration baseClass;
     @Getter
     private final List<ImplementsDeclaration> baseInterfaces = new ArrayList<>();
 
 
+    public JavaLanguage.Visibility getVisibility() { return getAttributeValue(JavaLanguage.Visibility.class); }
+    public boolean isAbstract() {
+        return getAttributeValue(JavaLanguage.Abstract.class) != null;
+    }
     public String getName() {
         return getValue();
-    }
-
-    public boolean isAbstract() {
-        return abstractModifier != null;
-    }
-
-    public void setAbstract(boolean value) {
-        abstractModifier = value ? JavaLanguage.Abstract.ABSTRACT : null;
     }
 }

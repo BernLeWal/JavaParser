@@ -1,9 +1,6 @@
 package at.codepunx.javaparser.parser.grammar;
 
-import at.codepunx.javaparser.parser.Composable;
-import at.codepunx.javaparser.parser.HasValue;
-import at.codepunx.javaparser.parser.NodeInterface;
-import at.codepunx.javaparser.parser.ParseException;
+import at.codepunx.javaparser.parser.*;
 import at.codepunx.javaparser.parser.grammar.comments.CommentInterface;
 import at.codepunx.javaparser.tokenizer.TokenReader;
 import at.codepunx.javaparser.tokenizer.TokenReaderException;
@@ -12,14 +9,12 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 @EqualsAndHashCode
-public abstract class Node implements NodeInterface, Composable<Node>, HasValue<String> {
+public abstract class Node implements NodeInterface, Composable<Node>, HasValue<String>, HasAttributes<String, NodeInterface> {
     @Getter
     @Setter
     private Node parent;
@@ -33,7 +28,11 @@ public abstract class Node implements NodeInterface, Composable<Node>, HasValue<
     @Setter
     private String value;
 
+    private final Map<String, NodeInterface> attributes = new HashMap<>();
 
+
+
+    // implementation Composable<Node>
     @Override
     public void addChild(Node child) {
         if ( child instanceof CommentInterface )
@@ -43,8 +42,8 @@ public abstract class Node implements NodeInterface, Composable<Node>, HasValue<
         child.setParent(this);
     }
 
-    public int getChildCount() {
-        return comments.size() + children.size();
+    public int getCount() {
+        return comments.size() + children.size() + attributes.size();
     }
 
     @Override
@@ -68,6 +67,37 @@ public abstract class Node implements NodeInterface, Composable<Node>, HasValue<
 
     public <T> List<T> getChildren(final Class<T> nodeClass) {
         return children.stream().filter( n->n.getClass().equals(nodeClass) ).map( n->(T)n ).toList();
+    }
+
+    // implementation HasAttributes<Node>
+    @Override
+    public void setAttribute(String key, NodeInterface node) {
+        if ( node != null )
+            attributes.put(key, node);
+        else if ( attributes.containsKey(key) )
+            attributes.remove(key);
+    }
+
+    @Override
+    public void removeAttribute(String key) {
+        attributes.remove(key);
+    }
+
+    @Override
+    public boolean hasAttribute(String key) {
+        return attributes.containsKey(key);
+    }
+
+    @Override
+    public NodeInterface getAttribute(String key) {
+        return attributes.get(key);
+    }
+
+    public <T> T getAttributeValue(Class<T> valueClass) {
+        var attr = getAttribute(valueClass.getSimpleName());
+        if ( attr!=null && attr instanceof HasValue<?> )
+            return ((HasValue<T>)attr).getValue();
+        return null;
     }
 
 
@@ -129,10 +159,10 @@ public abstract class Node implements NodeInterface, Composable<Node>, HasValue<
 
 
     protected int multiple(TokenReader<JavaTokenType> reader, Consumer<TokenReader<JavaTokenType>> func) throws ParseException {
-        int startChildCount = getChildCount();
+        int startChildCount = getCount();
         int childCount;
         do {
-            childCount = children.size() + comments.size();
+            childCount = getCount();
             TokenReader<JavaTokenType> backupReader = (TokenReader<JavaTokenType>)reader.clone();
             try {
                 func.accept(reader);
@@ -141,8 +171,8 @@ public abstract class Node implements NodeInterface, Composable<Node>, HasValue<
                 reader.revertTo(backupReader);
                 break;
             }
-        } while ( childCount < getChildCount() );
-        return getChildCount() - startChildCount;
+        } while ( childCount < getCount() );
+        return getCount() - startChildCount;
     }
 
 

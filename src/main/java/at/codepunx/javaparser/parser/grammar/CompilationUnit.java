@@ -40,11 +40,9 @@ public class CompilationUnit extends Node {
     String getJavaFileName() {
         return getValue();
     }
-
     Optional<PackageDeclaration> getPackage() {
         return getChild(PackageDeclaration.class);
     }
-
     List<ImportDeclaration> getImports() {
         return getChildren(ImportDeclaration.class);
     }

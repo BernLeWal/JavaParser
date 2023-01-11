@@ -9,9 +9,11 @@ import at.codepunx.javaparser.tokenizer.TokenReaderException;
 import at.codepunx.javaparser.tokenizer.impl.JavaTokenType;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.util.EnumSet;
 
+@ToString
 public class ModifierDeclaration<T extends Enum<T> > implements NodeInterface, HasValue<T> {
     @Getter
     @Setter
@@ -33,6 +35,10 @@ public class ModifierDeclaration<T extends Enum<T> > implements NodeInterface, H
         } catch (TokenReaderException e) {
             throw new ParseException(e);
         }
+    }
+
+    public ModifierDeclaration(T value) {
+        this.value = value;
     }
 
 }

@@ -8,8 +8,6 @@ import at.codepunx.javaparser.parser.grammar.types.ReferenceType;
 import at.codepunx.javaparser.parser.impl.JavaLanguage;
 import at.codepunx.javaparser.tokenizer.TokenReader;
 import at.codepunx.javaparser.tokenizer.impl.JavaTokenType;
-import lombok.Getter;
-import lombok.Setter;
 
 public class FieldDeclaration extends Node {
     /*
@@ -24,40 +22,25 @@ public class FieldDeclaration extends Node {
     public FieldDeclaration(TokenReader<JavaTokenType> reader) throws ParseException {
         optional(reader, JavadocComment::new);
 
-        visibility = new ModifierDeclaration<>(JavaLanguage.Visibility.class, reader).getValue();
-        staticModifier = new ModifierDeclaration<>(JavaLanguage.Static.class, reader).getValue();
-        finalModifier = new ModifierDeclaration<>(JavaLanguage.Final.class, reader).getValue();
+        setAttribute(JavaLanguage.Visibility.class.getSimpleName(), new ModifierDeclaration<>(JavaLanguage.Visibility.class, reader));
+        setAttribute(JavaLanguage.Static.class.getSimpleName(), new ModifierDeclaration<>(JavaLanguage.Static.class, reader));
+        setAttribute(JavaLanguage.Final.class.getSimpleName(), new ModifierDeclaration<>(JavaLanguage.Final.class, reader));
 
-        referenceTypeName = new ReferenceType(reader).getValue();
-        setValue(mandatoryToken( reader, JavaTokenType.IDENTIFIER));
-        if ( optionalToken( reader, JavaTokenType.OPERATOR, "=") ) {
-            mandatory( reader, Expression::new );
+        setAttribute(ReferenceType.class.getSimpleName(), new ReferenceType(reader));
+        setValue(mandatoryToken(reader, JavaTokenType.IDENTIFIER));
+        if (optionalToken(reader, JavaTokenType.OPERATOR, "=")) {
+            mandatory(reader, Expression::new);
         }
         mandatoryToken(reader, JavaTokenType.SEMIKOLON);
 
     }
 
-    @Getter
-    @Setter
-    private JavaLanguage.Visibility visibility;
-    private JavaLanguage.Static staticModifier;
-    private JavaLanguage.Final finalModifier;
 
-    @Getter
-    @Setter
-    private String referenceTypeName;
-
-    public boolean isStatic() {
-        return staticModifier != null;
+    public JavaLanguage.Visibility getVisibility() { return getAttributeValue(JavaLanguage.Visibility.class); }
+    public boolean isStatic() { return getAttributeValue(JavaLanguage.Static.class) != null; }
+    public boolean isFinal() {
+        return getAttributeValue(JavaLanguage.Final.class) != null;
     }
-    public boolean isFinal() { return finalModifier != null; }
-
-
-    @Override
-    public int getChildCount() {
-        return super.getChildCount()
-                + (visibility!=null ? 1 : 0)
-                + (staticModifier!=null ? 1 : 0)
-                + (finalModifier!=null ? 1 : 0);
-    }
+    public String getReferenceType() { return getAttributeValue(ReferenceType.class).getValue(); }
+    public String getName() { return getValue(); }
 }
