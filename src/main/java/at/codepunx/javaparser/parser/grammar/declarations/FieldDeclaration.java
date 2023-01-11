@@ -4,9 +4,9 @@ import at.codepunx.javaparser.parser.ParseException;
 import at.codepunx.javaparser.parser.grammar.Node;
 import at.codepunx.javaparser.parser.grammar.comments.JavadocComment;
 import at.codepunx.javaparser.parser.grammar.expressions.Expression;
+import at.codepunx.javaparser.parser.grammar.types.ReferenceType;
 import at.codepunx.javaparser.parser.impl.JavaLanguage;
 import at.codepunx.javaparser.tokenizer.TokenReader;
-import at.codepunx.javaparser.tokenizer.TokenReaderException;
 import at.codepunx.javaparser.tokenizer.impl.JavaTokenType;
 import lombok.Getter;
 import lombok.Setter;
@@ -28,27 +28,12 @@ public class FieldDeclaration extends Node {
         staticModifier = new ModifierDeclaration<>(JavaLanguage.Static.class, reader).getValue();
         finalModifier = new ModifierDeclaration<>(JavaLanguage.Final.class, reader).getValue();
 
-        try {
-            StringBuilder fqcn = new StringBuilder();
-            fqcn.append(reader.readToken(JavaTokenType.IDENTIFIER).getValue());
-            while (reader.tryReadToken(JavaTokenType.DOT)) {
-                fqcn.append(reader.readToken(JavaTokenType.DOT).getValue());
-                fqcn.append(reader.readToken(JavaTokenType.IDENTIFIER).getValue());
-            }
-            referenceTypeName = fqcn.toString();
-
-            setValue(reader.readToken(JavaTokenType.IDENTIFIER).getValue());
-
-            if ( reader.tryReadToken(JavaTokenType.OPERATOR, "=") ) {
-                reader.readToken(JavaTokenType.OPERATOR, "=");
-
-                mandatory( reader, Expression::new );
-            }
-            reader.readToken(JavaTokenType.SEMIKOLON);
+        referenceTypeName = new ReferenceType(reader).getValue();
+        setValue(mandatoryToken( reader, JavaTokenType.IDENTIFIER));
+        if ( optionalToken( reader, JavaTokenType.OPERATOR, "=") ) {
+            mandatory( reader, Expression::new );
         }
-        catch( TokenReaderException e ) {
-            throw new ParseException(e);
-        }
+        mandatoryToken(reader, JavaTokenType.SEMIKOLON);
 
     }
 

@@ -6,6 +6,7 @@ import at.codepunx.javaparser.parser.NodeInterface;
 import at.codepunx.javaparser.parser.ParseException;
 import at.codepunx.javaparser.parser.grammar.comments.CommentInterface;
 import at.codepunx.javaparser.tokenizer.TokenReader;
+import at.codepunx.javaparser.tokenizer.TokenReaderException;
 import at.codepunx.javaparser.tokenizer.impl.JavaTokenType;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -74,6 +75,22 @@ public abstract class Node implements NodeInterface, Composable<Node>, HasValue<
         addChild( func.apply(reader) );
     }
 
+    protected String mandatoryToken(TokenReader<JavaTokenType> reader, JavaTokenType tokenType) throws ParseException {
+        try {
+            return reader.readToken(tokenType).getValue();
+        } catch (TokenReaderException e) {
+            throw new ParseException(e);
+        }
+    }
+
+    protected void mandatoryToken(TokenReader<JavaTokenType> reader, JavaTokenType tokenType, String value) throws ParseException {
+        try {
+            reader.readToken(tokenType, value);
+        } catch (TokenReaderException e) {
+            throw new ParseException(e);
+        }
+    }
+
 
     protected boolean optional(TokenReader<JavaTokenType> reader, Function<TokenReader<JavaTokenType>, Node> func) {
         TokenReader<JavaTokenType> backupReader = (TokenReader<JavaTokenType>)reader.clone();
@@ -86,6 +103,30 @@ public abstract class Node implements NodeInterface, Composable<Node>, HasValue<
             return false;
         }
     }
+
+    protected String optionalToken(TokenReader<JavaTokenType> reader, JavaTokenType tokenType) {
+        if ( reader.tryReadToken(tokenType) ) {
+            try {
+                return reader.readToken(tokenType).getValue();
+            } catch (TokenReaderException e) {
+                throw new ParseException(e);
+            }
+        }
+        return null;
+    }
+
+    protected boolean optionalToken(TokenReader<JavaTokenType> reader, JavaTokenType tokenType, String value) {
+        if ( reader.tryReadToken(tokenType, value) ) {
+            try {
+                reader.readToken(tokenType, value);
+                return true;
+            } catch (TokenReaderException e) {
+                throw new ParseException(e);
+            }
+        }
+        return false;
+    }
+
 
     protected int multiple(TokenReader<JavaTokenType> reader, Consumer<TokenReader<JavaTokenType>> func) throws ParseException {
         int startChildCount = getChildCount();

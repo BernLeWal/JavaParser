@@ -7,7 +7,6 @@ import at.codepunx.javaparser.parser.grammar.comments.JavadocComment;
 import at.codepunx.javaparser.parser.grammar.comments.LineComment;
 import at.codepunx.javaparser.parser.impl.JavaLanguage;
 import at.codepunx.javaparser.tokenizer.TokenReader;
-import at.codepunx.javaparser.tokenizer.TokenReaderException;
 import at.codepunx.javaparser.tokenizer.impl.JavaTokenType;
 import lombok.Getter;
 import lombok.Setter;
@@ -33,12 +32,8 @@ public class ClassDeclaration extends Node {
         visibility = new ModifierDeclaration<>(JavaLanguage.Visibility.class, reader).getValue();
         abstractModifier = new ModifierDeclaration<>(JavaLanguage.Abstract.class, reader).getValue();
 
-        try {
-            reader.readToken(JavaTokenType.KEYWORD, "class");
-            setValue(reader.readToken(JavaTokenType.IDENTIFIER).getValue());
-        } catch (TokenReaderException e) {
-            throw new ParseException(e);
-        }
+        mandatoryToken( reader, JavaTokenType.KEYWORD, "class");
+        setValue( mandatoryToken( reader, JavaTokenType.IDENTIFIER));
 
         optional(reader, ExtendsDeclaration::new);
         if (optional(reader, ImplementsDeclaration::new)) {
@@ -48,12 +43,7 @@ public class ClassDeclaration extends Node {
             });
         }
 
-        try {
-            reader.readToken(JavaTokenType.CODE_BLOCK_START);
-        } catch (TokenReaderException e) {
-            System.err.println(e);
-            throw new ParseException(e);
-        }
+        mandatoryToken(reader, JavaTokenType.CODE_BLOCK_START);
 
         multiple(reader, r -> {
             optional(r, LineComment::new);
@@ -62,12 +52,7 @@ public class ClassDeclaration extends Node {
 //            optional(r, MethodDeclaration::new);
         });
 
-//        try {
-//            reader.readToken(JavaTokenType.CODE_BLOCK_END );
-//        } catch (TokenReaderException e) {
-//            System.err.println(e.toString());
-//            throw new ParseException(e);
-//        }
+//        mandatoryToken(reader, JavaTokenType.CODE_BLOCK_END);
     }
 
     @Override
