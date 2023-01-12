@@ -6,6 +6,8 @@ import at.codepunx.javaparser.parser.grammar.types.ReferenceType;
 import at.codepunx.javaparser.tokenizer.TokenReader;
 import at.codepunx.javaparser.tokenizer.impl.JavaTokenType;
 
+import static at.codepunx.javaparser.parser.Parser.mandatoryToken;
+
 public class PackageDeclaration extends Node {
     /*
     <package declaration> ::= package <package name> ;

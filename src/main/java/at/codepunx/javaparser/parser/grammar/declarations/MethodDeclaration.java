@@ -6,6 +6,8 @@ import at.codepunx.javaparser.parser.grammar.comments.JavadocComment;
 import at.codepunx.javaparser.tokenizer.TokenReader;
 import at.codepunx.javaparser.tokenizer.impl.JavaTokenType;
 
+import static at.codepunx.javaparser.parser.Parser.*;
+
 public class MethodDeclaration extends Node {
     /*
     <method declaration> ::= <method header> <method body>
@@ -18,6 +20,6 @@ public class MethodDeclaration extends Node {
      */
 
     public MethodDeclaration(TokenReader<JavaTokenType> reader) throws ParseException {
-        optional(reader, JavadocComment::new);
+        optional(reader, JavadocComment::new).sendTo(this::addComment);
     }
 }

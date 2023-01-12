@@ -14,6 +14,8 @@ import lombok.Setter;
 import java.util.ArrayList;
 import java.util.List;
 
+import static at.codepunx.javaparser.parser.Parser.*;
+
 public class ClassDeclaration extends Node {
 
     /*
@@ -28,28 +30,29 @@ public class ClassDeclaration extends Node {
     <class body declaration> ::= <class member declaration> | <static initializer> | <constructor declaration>
     */
     public ClassDeclaration(TokenReader<JavaTokenType> reader) throws ParseException {
-        optional(reader, JavadocComment::new);
+        optional(reader, JavadocComment::new).sendTo(this::addComment);
 
+        //optional(reader, r -> { return new ModifierDeclaration<>(JavaLanguage.Visibility.class, reader); } );
         setAttribute(JavaLanguage.Visibility.class.getSimpleName(), new ModifierDeclaration<>(JavaLanguage.Visibility.class, reader));
         setAttribute(JavaLanguage.Abstract.class.getSimpleName(), new ModifierDeclaration<>(JavaLanguage.Abstract.class, reader));
 
         mandatoryToken( reader, JavaTokenType.KEYWORD, "class");
-        setValue( mandatoryToken( reader, JavaTokenType.IDENTIFIER));
+        mandatoryToken( reader, JavaTokenType.IDENTIFIER).sendTo(this::setValue);
 
-        optional(reader, ExtendsDeclaration::new);
-        if (optional(reader, ImplementsDeclaration::new)) {
-            multiple(reader, r -> {
-                optional(reader, r1 -> new ImplementsDeclaration(false, r1));
+        optional(reader, ExtendsDeclaration::new).sendTo(this::addChild);
+        if (optional(reader, ImplementsDeclaration::new).hasNode()) {
+            multiple(this, reader, r -> {
+                optional(reader, r1 -> new ImplementsDeclaration(false, r1)).sendTo(this::addChild);
             });
         }
 
         mandatoryToken(reader, JavaTokenType.CODE_BLOCK_START);
 
-        multiple(reader, r -> {
-            optional(r, LineComment::new);
-            optional(r, BlockComment::new);
-            optional(r, FieldDeclaration::new);
-//            optional(r, MethodDeclaration::new);
+        multiple(this, reader, r -> {
+            optional(r, LineComment::new).sendTo(this::addComment);
+            optional(r, BlockComment::new).sendTo(this::addComment);
+            optional(r, FieldDeclaration::new).sendTo(this::addChild);
+//            optional(r, MethodDeclaration::new).sendTo(this::addChild);
         });
 
 //        mandatoryToken(reader, JavaTokenType.CODE_BLOCK_END);

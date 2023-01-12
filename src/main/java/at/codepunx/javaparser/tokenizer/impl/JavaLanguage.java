@@ -10,6 +10,7 @@ public class JavaLanguage {
             "public",
             "protected",
             "private",
+            "sealed",
 
             "class",
             "interface",
@@ -21,6 +22,7 @@ public class JavaLanguage {
             "final",
             "volatile",
             "throws",
+            "synchronized",
 
             "if",
             "else",
@@ -30,8 +32,11 @@ public class JavaLanguage {
             "while",
             "for",
             "do",
+            "try",
+            "catch",
 
             "new",
+            "throw",
 
     };
 

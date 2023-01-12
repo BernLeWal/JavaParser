@@ -9,6 +9,8 @@ import at.codepunx.javaparser.parser.impl.JavaLanguage;
 import at.codepunx.javaparser.tokenizer.TokenReader;
 import at.codepunx.javaparser.tokenizer.impl.JavaTokenType;
 
+import static at.codepunx.javaparser.parser.Parser.*;
+
 public class FieldDeclaration extends Node {
     /*
     <field declaration> ::= <field modifiers>? <type> <variable declarators> ;
@@ -20,16 +22,16 @@ public class FieldDeclaration extends Node {
     <variable initializer> ::= <expression> | <array initializer>
      */
     public FieldDeclaration(TokenReader<JavaTokenType> reader) throws ParseException {
-        optional(reader, JavadocComment::new);
+        optional(reader, JavadocComment::new).sendTo(this::addComment);
 
         setAttribute(JavaLanguage.Visibility.class.getSimpleName(), new ModifierDeclaration<>(JavaLanguage.Visibility.class, reader));
         setAttribute(JavaLanguage.Static.class.getSimpleName(), new ModifierDeclaration<>(JavaLanguage.Static.class, reader));
         setAttribute(JavaLanguage.Final.class.getSimpleName(), new ModifierDeclaration<>(JavaLanguage.Final.class, reader));
 
         setAttribute(ReferenceType.class.getSimpleName(), new ReferenceType(reader));
-        setValue(mandatoryToken(reader, JavaTokenType.IDENTIFIER));
+        mandatoryToken(reader, JavaTokenType.IDENTIFIER).sendTo(this::setValue);
         if (optionalToken(reader, JavaTokenType.OPERATOR, "=")) {
-            mandatory(reader, Expression::new);
+            mandatory(reader, Expression::new).sendTo(this::addChild);
         }
         mandatoryToken(reader, JavaTokenType.SEMIKOLON);
 

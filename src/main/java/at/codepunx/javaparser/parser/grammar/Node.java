@@ -1,17 +1,14 @@
 package at.codepunx.javaparser.parser.grammar;
 
-import at.codepunx.javaparser.parser.*;
-import at.codepunx.javaparser.parser.grammar.comments.CommentInterface;
-import at.codepunx.javaparser.tokenizer.TokenReader;
-import at.codepunx.javaparser.tokenizer.TokenReaderException;
-import at.codepunx.javaparser.tokenizer.impl.JavaTokenType;
+import at.codepunx.javaparser.parser.Composable;
+import at.codepunx.javaparser.parser.HasAttributes;
+import at.codepunx.javaparser.parser.HasValue;
+import at.codepunx.javaparser.parser.NodeInterface;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.*;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 @EqualsAndHashCode
 public abstract class Node implements NodeInterface, Composable<Node>, HasValue<String>, HasAttributes<String, NodeInterface> {
@@ -32,13 +29,25 @@ public abstract class Node implements NodeInterface, Composable<Node>, HasValue<
 
 
 
+
+    public void addComment(Node child) {
+        comments.add(child);
+        child.setParent(this);
+    }
+
+    public boolean removeComment(Node child) {
+        if ( comments.remove(child) ) {
+            child.setParent(null);
+            return true;
+        } else
+            return false;
+    }
+
+
     // implementation Composable<Node>
     @Override
     public void addChild(Node child) {
-        if ( child instanceof CommentInterface )
-            comments.add(child);
-        else
-            children.add(child);
+        children.add(child);
         child.setParent(this);
     }
 
@@ -48,13 +57,7 @@ public abstract class Node implements NodeInterface, Composable<Node>, HasValue<
 
     @Override
     public boolean removeChild(Node child) {
-        boolean removed;
-        if ( child instanceof CommentInterface )
-            removed = comments.remove(child);
-        else
-            removed = children.remove(child);
-
-        if ( removed ) {
+        if ( children.remove(child) ) {
             child.setParent(null);
             return true;
         } else
@@ -98,81 +101,6 @@ public abstract class Node implements NodeInterface, Composable<Node>, HasValue<
         if ( attr!=null && attr instanceof HasValue<?> )
             return ((HasValue<T>)attr).getValue();
         return null;
-    }
-
-
-    protected void mandatory(TokenReader<JavaTokenType> reader, Function<TokenReader<JavaTokenType>, Node> func) throws ParseException {
-        addChild( func.apply(reader) );
-    }
-
-    protected String mandatoryToken(TokenReader<JavaTokenType> reader, JavaTokenType tokenType) throws ParseException {
-        try {
-            return reader.readToken(tokenType).getValue();
-        } catch (TokenReaderException e) {
-            throw new ParseException(e);
-        }
-    }
-
-    protected void mandatoryToken(TokenReader<JavaTokenType> reader, JavaTokenType tokenType, String value) throws ParseException {
-        try {
-            reader.readToken(tokenType, value);
-        } catch (TokenReaderException e) {
-            throw new ParseException(e);
-        }
-    }
-
-
-    protected boolean optional(TokenReader<JavaTokenType> reader, Function<TokenReader<JavaTokenType>, Node> func) {
-        TokenReader<JavaTokenType> backupReader = (TokenReader<JavaTokenType>)reader.clone();
-        try {
-            addChild( func.apply(reader) );
-            return true;
-        }
-        catch ( ParseException e ) {
-            reader.revertTo(backupReader);
-            return false;
-        }
-    }
-
-    protected String optionalToken(TokenReader<JavaTokenType> reader, JavaTokenType tokenType) {
-        if ( reader.tryReadToken(tokenType) ) {
-            try {
-                return reader.readToken(tokenType).getValue();
-            } catch (TokenReaderException e) {
-                throw new ParseException(e);
-            }
-        }
-        return null;
-    }
-
-    protected boolean optionalToken(TokenReader<JavaTokenType> reader, JavaTokenType tokenType, String value) {
-        if ( reader.tryReadToken(tokenType, value) ) {
-            try {
-                reader.readToken(tokenType, value);
-                return true;
-            } catch (TokenReaderException e) {
-                throw new ParseException(e);
-            }
-        }
-        return false;
-    }
-
-
-    protected int multiple(TokenReader<JavaTokenType> reader, Consumer<TokenReader<JavaTokenType>> func) throws ParseException {
-        int startChildCount = getCount();
-        int childCount;
-        do {
-            childCount = getCount();
-            TokenReader<JavaTokenType> backupReader = (TokenReader<JavaTokenType>)reader.clone();
-            try {
-                func.accept(reader);
-            }
-            catch ( ParseException e ) {
-                reader.revertTo(backupReader);
-                break;
-            }
-        } while ( childCount < getCount() );
-        return getCount() - startChildCount;
     }
 
 

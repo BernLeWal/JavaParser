@@ -5,8 +5,10 @@ import at.codepunx.javaparser.parser.grammar.Node;
 import at.codepunx.javaparser.tokenizer.TokenReader;
 import at.codepunx.javaparser.tokenizer.impl.JavaTokenType;
 
+import static at.codepunx.javaparser.parser.Parser.mandatoryToken;
+
 public class BlockComment extends Node implements CommentInterface {
     public BlockComment(TokenReader<JavaTokenType> reader) throws ParseException {
-        setValue( mandatoryToken(reader, JavaTokenType.COMMENT_BLOCK) );
+        mandatoryToken(reader, JavaTokenType.COMMENT_BLOCK).sendTo(this::setValue);
     }
 }
