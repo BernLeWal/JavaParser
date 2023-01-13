@@ -1,44 +1,27 @@
 package at.codepunx.javaparser.parser.grammar.declarations;
 
-import at.codepunx.javaparser.parser.HasValue;
-import at.codepunx.javaparser.parser.NodeInterface;
 import at.codepunx.javaparser.parser.ParseException;
 import at.codepunx.javaparser.parser.grammar.KeywordTypeInterface;
+import at.codepunx.javaparser.parser.grammar.Node;
 import at.codepunx.javaparser.tokenizer.TokenReader;
 import at.codepunx.javaparser.tokenizer.TokenReaderException;
 import at.codepunx.javaparser.tokenizer.impl.JavaTokenType;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.ToString;
 
-import java.util.EnumSet;
-
 @ToString
-public class ModifierDeclaration<T extends Enum<T> > implements NodeInterface, HasValue<T> {
-    @Getter
-    @Setter
-    private T value = null;
+public class ModifierDeclaration extends Node {
 
-    public ModifierDeclaration(Class<T> enumClass, TokenReader<JavaTokenType> reader) throws ParseException {
+    public ModifierDeclaration(KeywordTypeInterface keyword, TokenReader<JavaTokenType> reader) throws ParseException {
         try {
-            boolean found = false;
-            for ( var e : EnumSet.allOf(enumClass) ) {
-                if ( reader.tryReadToken( JavaTokenType.KEYWORD, ((KeywordTypeInterface)e).value()) ) {
-                    value = e;
-                    found = true;
-                    break;
-                }
-            }
-
-            if ( found )
-                reader.readToken( JavaTokenType.KEYWORD );
+            reader.readToken(JavaTokenType.KEYWORD, keyword.value());
+            setValue( keyword.value() );
         } catch (TokenReaderException e) {
             throw new ParseException(e);
         }
     }
 
-    public ModifierDeclaration(T value) {
-        this.value = value;
+    public ModifierDeclaration(KeywordTypeInterface keyword) {
+        setValue(keyword.value());
     }
 
 }

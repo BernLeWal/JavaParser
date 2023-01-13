@@ -32,9 +32,11 @@ public class ClassDeclaration extends Node {
     public ClassDeclaration(TokenReader<JavaTokenType> reader) throws ParseException {
         optional(reader, JavadocComment::new).sendTo(this::addComment);
 
-        //optional(reader, r -> { return new ModifierDeclaration<>(JavaLanguage.Visibility.class, reader); } );
-        setAttribute(JavaLanguage.Visibility.class.getSimpleName(), new ModifierDeclaration<>(JavaLanguage.Visibility.class, reader));
-        setAttribute(JavaLanguage.Abstract.class.getSimpleName(), new ModifierDeclaration<>(JavaLanguage.Abstract.class, reader));
+        optional(reader, r -> new ModifierDeclaration(JavaLanguage.Visibility.PUBLIC, reader)).sendTo(n -> setAttribute(n.getValue(), n));
+        optional(reader, r -> new ModifierDeclaration(JavaLanguage.Visibility.PROTECTED, reader)).sendTo(n -> setAttribute(n.getValue(), n));
+        optional(reader, r -> new ModifierDeclaration(JavaLanguage.Visibility.PRIVATE, reader)).sendTo(n -> setAttribute(n.getValue(), n));
+
+        optional(reader, r->new ModifierDeclaration(JavaLanguage.Abstract.ABSTRACT, reader)).sendTo( n->setAttribute(n.getValue(), n));
 
         mandatoryToken( reader, JavaTokenType.KEYWORD, "class");
         mandatoryToken( reader, JavaTokenType.IDENTIFIER).sendTo(this::setValue);
@@ -79,11 +81,9 @@ public class ClassDeclaration extends Node {
     private final List<ImplementsDeclaration> baseInterfaces = new ArrayList<>();
 
 
-    public JavaLanguage.Visibility getVisibility() { return getAttributeValue(JavaLanguage.Visibility.class); }
-    public boolean isAbstract() {
-        return getAttributeValue(JavaLanguage.Abstract.class) != null;
-    }
-    public String getName() {
-        return getValue();
-    }
+    public boolean isPublic() { return hasAttribute(JavaLanguage.Visibility.PUBLIC.value()); }
+    public boolean isProtected() { return hasAttribute(JavaLanguage.Visibility.PROTECTED.value()); }
+    public boolean isPrivate() { return hasAttribute(JavaLanguage.Visibility.PRIVATE.value()); }
+    public boolean isAbstract() { return hasAttribute(JavaLanguage.Abstract.ABSTRACT.value()); }
+    public String getName() { return getValue(); }
 }

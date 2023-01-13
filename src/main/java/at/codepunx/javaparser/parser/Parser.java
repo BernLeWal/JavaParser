@@ -84,4 +84,28 @@ public class Parser {
         } while ( childCount < parent.getCount() );
         return parent.getCount() - startChildCount;
     }
+
+    @Deprecated
+    // ATTENTION: if failed, optionals in func may already applied the sendTo() consumer! Would need to revert this!
+    public static void amount(Node parent, int minCount, int maxCount, TokenReader<JavaTokenType> reader, Consumer<TokenReader<JavaTokenType>> func) throws ParseException {
+        int childCount = parent.getCount();
+        TokenReader<JavaTokenType> backupReader = (TokenReader<JavaTokenType>)reader.clone();
+        try {
+            func.accept(reader);
+        }
+        catch ( ParseException e ) {
+            reader.revertTo(backupReader);
+            throw e;
+        }
+        if ( parent.getCount() < (childCount+minCount) )
+            throw new ParseException( String.format("In %s only %d children created, expected minimum amount %d!", parent, parent.getCount()-childCount, minCount) ) ;
+        if ( parent.getCount() > (childCount+maxCount) )
+            throw new ParseException( String.format("In %s the amount of %d children created, expected maximum %d!", parent, parent.getCount()-childCount, maxCount) ) ;
+    }
+
+    @Deprecated
+    // ATTENTION: if failed, optionals in func may already applied the sendTo() consumer! Would need to revert this!
+    public static void oneOf(Node parent, TokenReader<JavaTokenType> reader, Consumer<TokenReader<JavaTokenType>> func) throws ParseException {
+        amount(parent, 1, 1, reader, func);
+    }
 }

@@ -74,11 +74,11 @@ public abstract class Node implements NodeInterface, Composable<Node>, HasValue<
 
     // implementation HasAttributes<Node>
     @Override
-    public void setAttribute(String key, NodeInterface node) {
-        if ( node != null )
-            attributes.put(key, node);
-        else if ( attributes.containsKey(key) )
-            attributes.remove(key);
+    public void setAttribute(String key, NodeInterface value) {
+        if ( value != null )
+            attributes.put( key, value );
+        else if ( hasAttribute(key) )
+            removeAttribute( key );
     }
 
     @Override

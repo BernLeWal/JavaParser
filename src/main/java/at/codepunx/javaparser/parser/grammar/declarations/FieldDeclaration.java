@@ -24,12 +24,16 @@ public class FieldDeclaration extends Node {
     public FieldDeclaration(TokenReader<JavaTokenType> reader) throws ParseException {
         optional(reader, JavadocComment::new).sendTo(this::addComment);
 
-        setAttribute(JavaLanguage.Visibility.class.getSimpleName(), new ModifierDeclaration<>(JavaLanguage.Visibility.class, reader));
-        setAttribute(JavaLanguage.Static.class.getSimpleName(), new ModifierDeclaration<>(JavaLanguage.Static.class, reader));
-        setAttribute(JavaLanguage.Final.class.getSimpleName(), new ModifierDeclaration<>(JavaLanguage.Final.class, reader));
+        optional(reader, r -> new ModifierDeclaration(JavaLanguage.Visibility.PUBLIC, reader)).sendTo(n -> setAttribute(n.getValue(), n));
+        optional(reader, r -> new ModifierDeclaration(JavaLanguage.Visibility.PROTECTED, reader)).sendTo(n -> setAttribute(n.getValue(), n));
+        optional(reader, r -> new ModifierDeclaration(JavaLanguage.Visibility.PRIVATE, reader)).sendTo(n -> setAttribute(n.getValue(), n));
 
-        setAttribute(ReferenceType.class.getSimpleName(), new ReferenceType(reader));
+        optional(reader, r->new ModifierDeclaration(JavaLanguage.Static.STATIC, reader)).sendTo( n->setAttribute(n.getValue(), n));
+        optional(reader, r->new ModifierDeclaration(JavaLanguage.Final.FINAL, reader)).sendTo( n->setAttribute(n.getValue(), n));
+
+        mandatory(reader, ReferenceType::new).sendTo( n->setAttribute(n.getClass().getSimpleName(), n));
         mandatoryToken(reader, JavaTokenType.IDENTIFIER).sendTo(this::setValue);
+
         if (optionalToken(reader, JavaTokenType.OPERATOR, "=")) {
             mandatory(reader, Expression::new).sendTo(this::addChild);
         }
@@ -38,11 +42,11 @@ public class FieldDeclaration extends Node {
     }
 
 
-    public JavaLanguage.Visibility getVisibility() { return getAttributeValue(JavaLanguage.Visibility.class); }
-    public boolean isStatic() { return getAttributeValue(JavaLanguage.Static.class) != null; }
-    public boolean isFinal() {
-        return getAttributeValue(JavaLanguage.Final.class) != null;
-    }
+    public boolean isPublic() { return hasAttribute(JavaLanguage.Visibility.PUBLIC.value()); }
+    public boolean isProtected() { return hasAttribute(JavaLanguage.Visibility.PROTECTED.value()); }
+    public boolean isPrivate() { return hasAttribute(JavaLanguage.Visibility.PRIVATE.value()); }
+    public boolean isStatic() { return hasAttribute(JavaLanguage.Static.STATIC.value()); }
+    public boolean isFinal() { return hasAttribute(JavaLanguage.Final.FINAL.value()); }
     public String getReferenceType() { return getAttributeValue(ReferenceType.class).getValue(); }
     public String getName() { return getValue(); }
 }
