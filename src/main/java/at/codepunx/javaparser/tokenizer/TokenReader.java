@@ -59,6 +59,7 @@ public class TokenReader<T extends TokenTypeInterface> implements Cloneable {
             previous();
             throw new TokenReaderException( String.format("Invalid token type '%s', expected was '%s'!", token.getType(), tokenType) );
         }
+        System.out.println( String.format("read Token %s(%s)", token.getType().name(), token.getValue() ) );
         return token;
     }
 
@@ -71,6 +72,7 @@ public class TokenReader<T extends TokenTypeInterface> implements Cloneable {
             throw new TokenReaderException( String.format("Invalid token type '%s'/'%s', expected was '%s'/'%s'!"
                     , token.getType(), token.getValue(), tokenType, value) );
         }
+        System.out.println( String.format("read Token %s(%s)", token.getType().name(), token.getValue() ) );
         return token;
     }
 
@@ -91,7 +93,7 @@ public class TokenReader<T extends TokenTypeInterface> implements Cloneable {
     }
 
 
-    public Token<T> next() {
+    private Token<T> next() {
         Token<T> token = it.next();
         if ( skipWhitespaceTokens && whitespaceTokenTypes !=null && !whitespaceTokenTypes.isEmpty()) {
             while( whitespaceTokenTypes.contains(token.getType()) && it.hasNext() ) {
@@ -101,7 +103,7 @@ public class TokenReader<T extends TokenTypeInterface> implements Cloneable {
         return token;
     }
 
-    public Token<T> previous() {
+    private Token<T> previous() {
         Token<T> token = it.previous();
         if ( skipWhitespaceTokens && whitespaceTokenTypes !=null && !whitespaceTokenTypes.isEmpty()) {
             while( whitespaceTokenTypes.contains(token.getType()) && it.hasPrevious() ) {

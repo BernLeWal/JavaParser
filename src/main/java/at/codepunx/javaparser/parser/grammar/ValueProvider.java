@@ -2,7 +2,7 @@ package at.codepunx.javaparser.parser.grammar;
 
 import java.util.function.Consumer;
 
-public class ValueProvider {
+public class ValueProvider implements ProviderInterface {
     private final String value;
 
     public ValueProvider() { value = null; }
@@ -12,6 +12,8 @@ public class ValueProvider {
         if ( value!=null )
             func.accept(value);
     }
-    public boolean hasValue() { return value!=null; }
+
+    @Override
+    public boolean isEmpty() { return value==null; }
     public String getValue() { return value; }
 }

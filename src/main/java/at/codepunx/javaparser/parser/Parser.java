@@ -7,12 +7,23 @@ import at.codepunx.javaparser.tokenizer.TokenReader;
 import at.codepunx.javaparser.tokenizer.TokenReaderException;
 import at.codepunx.javaparser.tokenizer.impl.JavaTokenType;
 
+import java.util.Arrays;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class Parser {
     public static NodeProvider mandatory(TokenReader<JavaTokenType> reader, Function<TokenReader<JavaTokenType>, Node> func) throws ParseException {
         return new NodeProvider( func.apply(reader) );
+    }
+
+    public static NodeProvider mandatoryOneOf(TokenReader<JavaTokenType> reader, Function<TokenReader<JavaTokenType>, Node>... funcs) throws ParseException {
+        for( var func : funcs ) {
+            var nodeProvider = optional(reader, func);
+            if ( nodeProvider != null && !nodeProvider.isEmpty())
+                return nodeProvider;
+        }
+        throw new ParseException( "None of mandatory created, looked for " + funcs );
     }
 
     public static NodeProvider optional(TokenReader<JavaTokenType> reader, Function<TokenReader<JavaTokenType>, Node> func) {
@@ -26,6 +37,15 @@ public class Parser {
         }
     }
 
+    public static NodeProvider optionalOneOf(TokenReader<JavaTokenType> reader, Function<TokenReader<JavaTokenType>, Node>... funcs) throws ParseException {
+        for( var func : funcs ) {
+            var nodeProvider = optional(reader, func);
+            if ( nodeProvider!= null && !nodeProvider.isEmpty() )
+                return nodeProvider;
+        }
+        return new NodeProvider();
+    }
+
 
     public static ValueProvider mandatoryToken(TokenReader<JavaTokenType> reader, JavaTokenType tokenType) throws ParseException {
         try {
@@ -35,9 +55,9 @@ public class Parser {
         }
     }
 
-    public static void mandatoryToken(TokenReader<JavaTokenType> reader, JavaTokenType tokenType, String value) throws ParseException {
+    public static ValueProvider mandatoryToken(TokenReader<JavaTokenType> reader, JavaTokenType tokenType, String value) throws ParseException {
         try {
-            reader.readToken(tokenType, value);
+            return new ValueProvider( reader.readToken(tokenType, value).getValue() );
         } catch (TokenReaderException e) {
             throw new ParseException(e);
         }

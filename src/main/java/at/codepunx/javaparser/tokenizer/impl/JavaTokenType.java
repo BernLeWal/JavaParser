@@ -20,23 +20,27 @@ public enum JavaTokenType implements TokenTypeInterface {
 
     CODE_BLOCK_START(s -> TokenizerValidators.is("{", s)),
     CODE_BLOCK_END(s -> TokenizerValidators.is("}", s)),
-    ROUND_BRACKET_START(s -> TokenizerValidators.is("(", s)),
-    ROUND_BRACKET_END(s -> TokenizerValidators.is(")", s)),
-    SQUARE_BRACKET_START(s -> TokenizerValidators.is("[", s)),
-    SQUARE_BRACKET_END(s -> TokenizerValidators.is("]", s)),
+    ROUND_BRACKET_OPEN(s -> TokenizerValidators.is("(", s)),
+    ROUND_BRACKET_CLOSE(s -> TokenizerValidators.is(")", s)),
+    SQUARE_BRACKET_OPEN(s -> TokenizerValidators.is("[", s)),
+    SQUARE_BRACKET_CLOSE(s -> TokenizerValidators.is("]", s)),
 
-    OPERATOR( s -> TokenizerValidators.isIn("+-*/%<>=!&|", s)),
+    KEYWORD( s->TokenizerValidators.inList( JavaLanguage.KEYWORDS, s )),
+    PRIMITIVE( s->TokenizerValidators.inList( JavaLanguage.PRIMITIVES, s)),
+
+    ASSIGNMENT( s->TokenizerValidators.inList( JavaLanguage.ASSIGNMENT_OPERATORS, s)),
+    RELATION( s->TokenizerValidators.inList( JavaLanguage.RELATIONAL_OPERATORS, s)),
+    SHIFT( s->TokenizerValidators.inList( JavaLanguage.SHIFT_OPERATORS, s)),
+
     LAMBDA(s -> TokenizerValidators.is( "->", s)),
+    OPERATOR( s -> TokenizerValidators.isIn("+-*/%^!&|?:~", s)),
 
-    DOUBLE_POINT(s -> TokenizerValidators.is(":", s)),
     SEMIKOLON(s -> TokenizerValidators.is(";", s)),
     DOT(s -> TokenizerValidators.is(".", s)),
     COMMA(s -> TokenizerValidators.is( ",", s)),
 
     ANNOTATION(s -> TokenizerValidators.is("@", s)),
 
-    KEYWORD( s->TokenizerValidators.inList( JavaLanguage.KEYWORDS, s )),
-    PRIMITIVE( s->TokenizerValidators.inList( JavaLanguage.PRIMITIVES, s)),
     IDENTIFIER(s -> TokenizerValidators.charsIn( "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_", "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789", s)),
 
     CONST_NUMBER( s -> TokenizerValidators.charsIn("0123456789", "0123456789.e-+", s)  ), // TODO . as valid first character

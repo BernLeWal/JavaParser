@@ -16,6 +16,12 @@ public class JavaLanguage {
             "interface",
             "record",
 
+            "implements",
+            "extends",
+
+            "this",
+            "super",
+
             // Members
             "default",
             "static",
@@ -38,6 +44,8 @@ public class JavaLanguage {
             "new",
             "throw",
 
+            "instanceof",
+
     };
 
     public static final String[] PRIMITIVES = {
@@ -46,7 +54,8 @@ public class JavaLanguage {
             "boolean",
             "char",
             "byte",
-            "integer",
+            "short",
+            "int",
             "long",
             "float",
             "double",
@@ -55,5 +64,33 @@ public class JavaLanguage {
             "false",
 
             "null",
+    };
+
+    public static final String[] ASSIGNMENT_OPERATORS = {
+            "=",
+            "*=",
+            "/=",
+            "%=",
+            "+=",
+            "-=",
+            "<<=",
+            ">>=",
+            ">>>=",
+            "&=",
+            "^=",
+            "|=",
+    };
+
+    public static final String[] RELATIONAL_OPERATORS = {
+            "<",
+            ">",
+            "<=",
+            ">=",
+    };
+
+    public static final String[] SHIFT_OPERATORS = {
+            "<<",
+            ">>",
+            ">>>",
     };
 }

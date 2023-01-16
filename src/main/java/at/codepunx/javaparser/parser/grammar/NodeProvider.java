@@ -2,7 +2,7 @@ package at.codepunx.javaparser.parser.grammar;
 
 import java.util.function.Consumer;
 
-public class NodeProvider {
+public class NodeProvider implements ProviderInterface {
     private final Node node;
 
     public NodeProvider() { node = null; }
@@ -12,6 +12,8 @@ public class NodeProvider {
         if ( node != null )
             func.accept(node);
     }
-    public boolean hasNode() { return node!=null; }
+
+    @Override
+    public boolean isEmpty() { return node==null; }
     public Node getNode() { return node; }
 }

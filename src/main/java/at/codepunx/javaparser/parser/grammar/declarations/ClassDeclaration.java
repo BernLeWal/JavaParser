@@ -42,7 +42,7 @@ public class ClassDeclaration extends Node {
         mandatoryToken( reader, JavaTokenType.IDENTIFIER).sendTo(this::setValue);
 
         optional(reader, ExtendsDeclaration::new).sendTo(this::addChild);
-        if (optional(reader, ImplementsDeclaration::new).hasNode()) {
+        if (!optional(reader, ImplementsDeclaration::new).isEmpty()) {
             multiple(this, reader, r -> {
                 optional(reader, r1 -> new ImplementsDeclaration(false, r1)).sendTo(this::addChild);
             });

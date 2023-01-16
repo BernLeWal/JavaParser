@@ -35,7 +35,8 @@ public class JavaParserAppService implements JavaParserAppServiceInterface {
 
             JavaParser parser = new JavaParser();
             var rootNode = parser.parseJavaFile( params.getSourceRootDirectory().getFileName().toString(), tokens );
-            log.info( "Parser returned: " + rootNode.toStringRecursive(true));
+            log.info( "Parser returned: \n" + rootNode.toStringRecursive(true, 0));
+            log.info( "Done.");
 
         } catch (TokenizerException e) {
             log.error( e.getMessage() );

@@ -15,6 +15,8 @@ public abstract class Node implements NodeInterface, Composable<Node>, HasValue<
     @Getter
     @Setter
     private Node parent;
+    @Getter
+    private int tokenNr;
 
     @Getter
     private final List<Node> children = new ArrayList<>();
@@ -23,7 +25,7 @@ public abstract class Node implements NodeInterface, Composable<Node>, HasValue<
 
     @Getter
     @Setter
-    private String value;
+    private String value = null;
 
     private final Map<String, NodeInterface> attributes = new HashMap<>();
 
@@ -47,8 +49,10 @@ public abstract class Node implements NodeInterface, Composable<Node>, HasValue<
     // implementation Composable<Node>
     @Override
     public void addChild(Node child) {
-        children.add(child);
-        child.setParent(this);
+        if ( child!=null ) {
+            children.add(child);
+            child.setParent(this);
+        }
     }
 
     public int getCount() {
@@ -109,21 +113,22 @@ public abstract class Node implements NodeInterface, Composable<Node>, HasValue<
         return String.format("%s(%s)", this.getClass().getSimpleName(), getValue());
     }
 
-    public String toStringRecursive(boolean showType) {
+    public String toStringRecursive(boolean showType, int indentCount) {
+        String indent = "\t".repeat(indentCount);
         StringBuilder sb = new StringBuilder();
         if( showType )
-            sb.append( toString() );
+            sb.append( indent + toString() );
         if( !isLeaf() ) {
-            sb.append("[");
+            sb.append( " {\n");
             boolean isFirst = true;
             for (Node child : children) {
                 if (isFirst)
                     isFirst = false;
                 else
-                    sb.append(", ");
-                sb.append(child.toStringRecursive(true));
+                    sb.append(", \n");
+                sb.append(child.toStringRecursive(true, indentCount+1));
             }
-            sb.append("] ");
+            sb.append("\n" + indent + "} ");
         }
         return sb.toString();
     }

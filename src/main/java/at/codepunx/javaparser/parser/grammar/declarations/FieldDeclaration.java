@@ -3,7 +3,7 @@ package at.codepunx.javaparser.parser.grammar.declarations;
 import at.codepunx.javaparser.parser.ParseException;
 import at.codepunx.javaparser.parser.grammar.Node;
 import at.codepunx.javaparser.parser.grammar.comments.JavadocComment;
-import at.codepunx.javaparser.parser.grammar.expressions.Expression;
+import at.codepunx.javaparser.parser.grammar.expressions.AssignmentExpression;
 import at.codepunx.javaparser.parser.grammar.types.ReferenceType;
 import at.codepunx.javaparser.parser.impl.JavaLanguage;
 import at.codepunx.javaparser.tokenizer.TokenReader;
@@ -34,8 +34,8 @@ public class FieldDeclaration extends Node {
         mandatory(reader, ReferenceType::new).sendTo( n->setAttribute(n.getClass().getSimpleName(), n));
         mandatoryToken(reader, JavaTokenType.IDENTIFIER).sendTo(this::setValue);
 
-        if (optionalToken(reader, JavaTokenType.OPERATOR, "=")) {
-            mandatory(reader, Expression::new).sendTo(this::addChild);
+        if (optionalToken(reader, JavaTokenType.ASSIGNMENT, "=")) {
+            mandatory(reader, AssignmentExpression::new).sendTo(this::addChild);
         }
         mandatoryToken(reader, JavaTokenType.SEMIKOLON);
 
