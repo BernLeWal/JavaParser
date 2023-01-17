@@ -1,15 +1,15 @@
 package at.codepunx.javaparser.parser.grammar.declarations;
 
 import at.codepunx.javaparser.parser.ParseException;
+import at.codepunx.javaparser.parser.Parser;
 import at.codepunx.javaparser.parser.grammar.Node;
 import at.codepunx.javaparser.parser.grammar.comments.JavadocComment;
-import at.codepunx.javaparser.parser.grammar.expressions.AssignmentExpression;
+import at.codepunx.javaparser.parser.grammar.expressions.Expression;
 import at.codepunx.javaparser.parser.grammar.types.ReferenceType;
 import at.codepunx.javaparser.parser.impl.JavaLanguage;
-import at.codepunx.javaparser.tokenizer.TokenReader;
 import at.codepunx.javaparser.tokenizer.impl.JavaTokenType;
 
-import static at.codepunx.javaparser.parser.Parser.*;
+
 
 public class FieldDeclaration extends Node {
     /*
@@ -21,23 +21,24 @@ public class FieldDeclaration extends Node {
     <variable declarator id> ::= <identifier> | <variable declarator id> [ ]
     <variable initializer> ::= <expression> | <array initializer>
      */
-    public FieldDeclaration(TokenReader<JavaTokenType> reader) throws ParseException {
-        optional(reader, JavadocComment::new).sendTo(this::addComment);
+    public FieldDeclaration(Parser<JavaTokenType> p) throws ParseException {
+        super( p );
+        p.optional( JavadocComment::new).sendTo(this::addComment);
 
-        optional(reader, r -> new ModifierDeclaration(JavaLanguage.Visibility.PUBLIC, reader)).sendTo(n -> setAttribute(n.getValue(), n));
-        optional(reader, r -> new ModifierDeclaration(JavaLanguage.Visibility.PROTECTED, reader)).sendTo(n -> setAttribute(n.getValue(), n));
-        optional(reader, r -> new ModifierDeclaration(JavaLanguage.Visibility.PRIVATE, reader)).sendTo(n -> setAttribute(n.getValue(), n));
+        p.optional( p1 -> new ModifierDeclaration(p, JavaLanguage.Visibility.PUBLIC)).sendTo(n -> setAttribute(n.getValue(), n));
+        p.optional( p1 -> new ModifierDeclaration(p, JavaLanguage.Visibility.PROTECTED)).sendTo(n -> setAttribute(n.getValue(), n));
+        p.optional( p1 -> new ModifierDeclaration(p, JavaLanguage.Visibility.PRIVATE)).sendTo(n -> setAttribute(n.getValue(), n));
 
-        optional(reader, r->new ModifierDeclaration(JavaLanguage.Static.STATIC, reader)).sendTo( n->setAttribute(n.getValue(), n));
-        optional(reader, r->new ModifierDeclaration(JavaLanguage.Final.FINAL, reader)).sendTo( n->setAttribute(n.getValue(), n));
+        p.optional( p1 -> new ModifierDeclaration(p, JavaLanguage.Static.STATIC)).sendTo( n->setAttribute(n.getValue(), n));
+        p.optional( p1 -> new ModifierDeclaration(p, JavaLanguage.Final.FINAL)).sendTo( n->setAttribute(n.getValue(), n));
 
-        mandatory(reader, ReferenceType::new).sendTo( n->setAttribute(n.getClass().getSimpleName(), n));
-        mandatoryToken(reader, JavaTokenType.IDENTIFIER).sendTo(this::setValue);
+        p.mandatory( ReferenceType::new).sendTo( n->setAttribute(n.getClass().getSimpleName(), n));
+        p.mandatoryToken( JavaTokenType.IDENTIFIER ).sendTo(this::setValue);
 
-        if (optionalToken(reader, JavaTokenType.ASSIGNMENT, "=")) {
-            mandatory(reader, AssignmentExpression::new).sendTo(this::addChild);
+        if (p.optionalToken( JavaTokenType.ASSIGNMENT, "=")) {
+            p.mandatory( Expression::new ).sendTo(this::addChild);
         }
-        mandatoryToken(reader, JavaTokenType.SEMIKOLON);
+        p.mandatoryToken( JavaTokenType.SEMIKOLON );
 
     }
 

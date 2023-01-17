@@ -1,18 +1,16 @@
 package at.codepunx.javaparser.parser.grammar;
 
 import at.codepunx.javaparser.parser.ParseException;
+import at.codepunx.javaparser.parser.Parser;
 import at.codepunx.javaparser.parser.grammar.comments.BlockComment;
 import at.codepunx.javaparser.parser.grammar.comments.LineComment;
 import at.codepunx.javaparser.parser.grammar.declarations.ClassDeclaration;
 import at.codepunx.javaparser.parser.grammar.declarations.ImportDeclaration;
 import at.codepunx.javaparser.parser.grammar.declarations.PackageDeclaration;
-import at.codepunx.javaparser.tokenizer.TokenReader;
 import at.codepunx.javaparser.tokenizer.impl.JavaTokenType;
 
 import java.util.List;
 import java.util.Optional;
-
-import static at.codepunx.javaparser.parser.Parser.*;
 
 public class CompilationUnit extends Node {
     /*
@@ -21,21 +19,22 @@ public class CompilationUnit extends Node {
     <type declarations> ::= <type declaration> | <type declarations> <type declaration>
     <type declaration> ::= <class declaration> | <interface declaration> | ;
      */
-    public CompilationUnit(String javaFileName, TokenReader<JavaTokenType> reader) throws ParseException {
+    public CompilationUnit(Parser<JavaTokenType> p, String javaFileName) throws ParseException {
+        super( p );
         setValue(javaFileName);
 
-        multiple(this, reader, r -> {
-            optional(r, LineComment::new).sendTo(this::addComment);
-            optional(r, BlockComment::new).sendTo(this::addComment);
+        p.multiple(r -> {
+            p.optional(LineComment::new).sendTo(this::addComment);
+            p.optional(BlockComment::new).sendTo(this::addComment);
         });
-        mandatory(reader, PackageDeclaration::new).sendTo(this::addChild);
-        multiple(this, reader, r -> {
-            optional(r, LineComment::new).sendTo(this::addComment);
-            optional(r, BlockComment::new).sendTo(this::addComment);
-            optional(r, ImportDeclaration::new).sendTo(this::addChild);
+        p.mandatory( PackageDeclaration::new).sendTo(this::addChild);
+        p.multiple(r -> {
+            p.optional(LineComment::new).sendTo(this::addComment);
+            p.optional(BlockComment::new).sendTo(this::addComment);
+            p.optional(ImportDeclaration::new).sendTo(this::addChild);
         });
-        multiple(this, reader, r -> {
-            optional(r, ClassDeclaration::new).sendTo(this::addChild);
+        p.multiple(r -> {
+            p.optional(ClassDeclaration::new).sendTo(this::addChild);
         });
     }
 

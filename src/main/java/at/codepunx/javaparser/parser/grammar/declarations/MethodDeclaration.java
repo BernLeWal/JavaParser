@@ -1,12 +1,10 @@
 package at.codepunx.javaparser.parser.grammar.declarations;
 
 import at.codepunx.javaparser.parser.ParseException;
+import at.codepunx.javaparser.parser.Parser;
 import at.codepunx.javaparser.parser.grammar.Node;
 import at.codepunx.javaparser.parser.grammar.comments.JavadocComment;
-import at.codepunx.javaparser.tokenizer.TokenReader;
 import at.codepunx.javaparser.tokenizer.impl.JavaTokenType;
-
-import static at.codepunx.javaparser.parser.Parser.*;
 
 public class MethodDeclaration extends Node {
     /*
@@ -19,7 +17,8 @@ public class MethodDeclaration extends Node {
     <method body> ::= <block> | ;
      */
 
-    public MethodDeclaration(TokenReader<JavaTokenType> reader) throws ParseException {
-        optional(reader, JavadocComment::new).sendTo(this::addComment);
+    public MethodDeclaration(Parser<JavaTokenType> p) throws ParseException {
+        super( p );
+        p.optional(JavadocComment::new).sendTo(this::addComment);
     }
 }

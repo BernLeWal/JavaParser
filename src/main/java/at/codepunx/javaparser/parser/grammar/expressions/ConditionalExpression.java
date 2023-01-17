@@ -1,12 +1,9 @@
 package at.codepunx.javaparser.parser.grammar.expressions;
 
 import at.codepunx.javaparser.parser.ParseException;
+import at.codepunx.javaparser.parser.Parser;
 import at.codepunx.javaparser.parser.grammar.Node;
-import at.codepunx.javaparser.parser.grammar.NodeProvider;
-import at.codepunx.javaparser.tokenizer.TokenReader;
 import at.codepunx.javaparser.tokenizer.impl.JavaTokenType;
-
-import static at.codepunx.javaparser.parser.Parser.*;
 
 public class ConditionalExpression extends Node {
     /*
@@ -14,16 +11,17 @@ public class ConditionalExpression extends Node {
                                 | <conditional or expression> '?' <expression> ':' <conditional expression>
         <expression> ::= <assignment expression>
      */
-    public ConditionalExpression(TokenReader<JavaTokenType> reader) throws ParseException {
-        mandatoryOneOf( reader,
+    public ConditionalExpression(Parser<JavaTokenType> p) throws ParseException {
+        super( p );
+        p.mandatoryOneOf(  
                 ConditionalOrExpression::new,
                 r->{
-                    mandatory(r, ConditionalOrExpression::new).sendTo(this::addChild);
-                    mandatoryToken( r, JavaTokenType.OPERATOR, "?");
-                    mandatory(r, Expression::new).sendTo(this::addChild);
-                    mandatoryToken( r, JavaTokenType.OPERATOR, ":");
-                    mandatory(r, ConditionalExpression::new).sendTo(this::addChild);
-                    return null;
+                    p.mandatory( ConditionalOrExpression::new).sendTo(this::addChild);
+                    p.mandatoryToken(  JavaTokenType.OPERATOR, "?");
+                    p.mandatory( Expression::new).sendTo(this::addChild);
+                    p.mandatoryToken(  JavaTokenType.OPERATOR, ":");
+                    p.mandatory( ConditionalExpression::new).sendTo(this::addChild);
+                    return this;
                 }
                 ).sendTo(this::addChild);
     }

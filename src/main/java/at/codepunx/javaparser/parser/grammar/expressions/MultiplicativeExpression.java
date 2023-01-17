@@ -1,11 +1,9 @@
 package at.codepunx.javaparser.parser.grammar.expressions;
 
 import at.codepunx.javaparser.parser.ParseException;
+import at.codepunx.javaparser.parser.Parser;
 import at.codepunx.javaparser.parser.grammar.Node;
-import at.codepunx.javaparser.tokenizer.TokenReader;
 import at.codepunx.javaparser.tokenizer.impl.JavaTokenType;
-
-import static at.codepunx.javaparser.parser.Parser.*;
 
 public class MultiplicativeExpression extends Node {
     /*
@@ -14,26 +12,27 @@ public class MultiplicativeExpression extends Node {
                                       | <multiplicative expression> '/' <unary expression>
                                       | <multiplicative expression> '%' <unary expression>
      */
-    public MultiplicativeExpression(TokenReader<JavaTokenType> reader) throws ParseException {
-        mandatoryOneOf( reader,
+    public MultiplicativeExpression(Parser<JavaTokenType> p) throws ParseException {
+        super( p );
+        p.mandatoryOneOf(  
                 UnaryExpression::new,
                 r->{
-                    mandatory( r, MultiplicativeExpression::new ).sendTo(this::addChild);
-                    mandatoryToken( r, JavaTokenType.OPERATOR, "*").sendTo(this::setValue);
-                    mandatory( r, UnaryExpression::new ).sendTo(this::addChild);
-                    return null;
+                    p.mandatory(  MultiplicativeExpression::new ).sendTo(this::addChild);
+                    p.mandatoryToken(  JavaTokenType.OPERATOR, "*").sendTo(this::setValue);
+                    p.mandatory(  UnaryExpression::new ).sendTo(this::addChild);
+                    return this;
                 },
                 r->{
-                    mandatory( r, MultiplicativeExpression::new ).sendTo(this::addChild);
-                    mandatoryToken( r, JavaTokenType.OPERATOR, "/").sendTo(this::setValue);
-                    mandatory( r, UnaryExpression::new ).sendTo(this::addChild);
-                    return null;
+                    p.mandatory(  MultiplicativeExpression::new ).sendTo(this::addChild);
+                    p.mandatoryToken(  JavaTokenType.OPERATOR, "/").sendTo(this::setValue);
+                    p.mandatory(  UnaryExpression::new ).sendTo(this::addChild);
+                    return this;
                 },
                 r->{
-                    mandatory( r, MultiplicativeExpression::new ).sendTo(this::addChild);
-                    mandatoryToken( r, JavaTokenType.OPERATOR, "%").sendTo(this::setValue);
-                    mandatory( r, UnaryExpression::new ).sendTo(this::addChild);
-                    return null;
+                    p.mandatory(  MultiplicativeExpression::new ).sendTo(this::addChild);
+                    p.mandatoryToken(  JavaTokenType.OPERATOR, "%").sendTo(this::setValue);
+                    p.mandatory(  UnaryExpression::new ).sendTo(this::addChild);
+                    return this;
                 }
         ).sendTo(this::addChild);
     }

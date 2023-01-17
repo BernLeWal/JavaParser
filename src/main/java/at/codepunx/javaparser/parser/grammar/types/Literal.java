@@ -1,11 +1,9 @@
 package at.codepunx.javaparser.parser.grammar.types;
 
 import at.codepunx.javaparser.parser.ParseException;
+import at.codepunx.javaparser.parser.Parser;
 import at.codepunx.javaparser.parser.grammar.Node;
-import at.codepunx.javaparser.tokenizer.TokenReader;
 import at.codepunx.javaparser.tokenizer.impl.JavaTokenType;
-
-import static at.codepunx.javaparser.parser.Parser.*;
 
 
 public class Literal extends Node {
@@ -40,15 +38,16 @@ public class Literal extends Node {
         <string character> ::= <input character> except " and \ | <escape character>
         <null literal> ::= null
      */
-    public Literal(TokenReader<JavaTokenType> reader) throws ParseException {
-        mandatoryOneOf( reader,
-                r->{ mandatoryToken(reader, JavaTokenType.CONST_NUMBER ).sendTo(this::setValue); return null; },
-                r->{ mandatoryToken(reader, JavaTokenType.PRIMITIVE, "true").sendTo(this::setValue); return null; },
-                r->{ mandatoryToken(reader, JavaTokenType.PRIMITIVE, "false").sendTo(this::setValue); return null; },
-                r->{ mandatoryToken(reader, JavaTokenType.CONST_CHAR, "true").sendTo(this::setValue); return null; },
-                r->{ mandatoryToken(reader, JavaTokenType.CONST_STRING, "true").sendTo(this::setValue); return null; },
-                r->{ mandatoryToken(reader, JavaTokenType.CONST_STRING_MULTILINE, "true").sendTo(this::setValue); return null; },
-                r->{ mandatoryToken(reader, JavaTokenType.PRIMITIVE, "null").sendTo(this::setValue); return null; }
+    public Literal(Parser<JavaTokenType> p) throws ParseException {
+        super( p );
+        p.mandatoryOneOf(
+                p1->{ p.mandatoryToken( JavaTokenType.CONST_NUMBER ).sendTo(this::setValue); return this; },
+                p1->{ p.mandatoryToken( JavaTokenType.PRIMITIVE, "true").sendTo(this::setValue); return this; },
+                p1->{ p.mandatoryToken( JavaTokenType.PRIMITIVE, "false").sendTo(this::setValue); return this; },
+                p1->{ p.mandatoryToken( JavaTokenType.CONST_CHAR  ).sendTo(this::setValue); return this; },
+                p1->{ p.mandatoryToken( JavaTokenType.CONST_STRING ).sendTo(this::setValue); return this; },
+                p1->{ p.mandatoryToken( JavaTokenType.CONST_STRING_MULTILINE ).sendTo(this::setValue); return this; },
+                p1->{ p.mandatoryToken( JavaTokenType.PRIMITIVE, "null").sendTo(this::setValue); return this; }
         );
     }
 }

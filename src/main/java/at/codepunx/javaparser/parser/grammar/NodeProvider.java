@@ -5,8 +5,13 @@ import java.util.function.Consumer;
 public class NodeProvider implements ProviderInterface {
     private final Node node;
 
-    public NodeProvider() { node = null; }
-    public NodeProvider(Node node) { this.node = node; }
+    public NodeProvider() {
+        node = null;
+    }
+
+    public NodeProvider(Node node) {
+        this.node = node;
+    }
 
     public void sendTo(Consumer<Node> func) {
         if ( node != null )

@@ -1,9 +1,7 @@
 package at.codepunx.javaparser.parser.grammar;
 
-import at.codepunx.javaparser.parser.Composable;
-import at.codepunx.javaparser.parser.HasAttributes;
-import at.codepunx.javaparser.parser.HasValue;
-import at.codepunx.javaparser.parser.NodeInterface;
+import at.codepunx.javaparser.parser.*;
+import at.codepunx.javaparser.tokenizer.impl.JavaTokenType;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -30,6 +28,32 @@ public abstract class Node implements NodeInterface, Composable<Node>, HasValue<
     private final Map<String, NodeInterface> attributes = new HashMap<>();
 
 
+    protected Node(Parser<JavaTokenType> parser) {
+        if ( parser!=null ) {
+            this.parent = parser.getCurrentNode();
+            this.tokenNr = parser.getReader().getNextIndex();
+//            if ( tokenNr==47 ) {
+//                System.out.printf("* %s --> ", this);
+//                var p = this.getParent();
+//                while ( p!=null ) {
+//                    System.out.print(p + ", ");
+//                    p = p.getParent();
+//                }
+//                System.out.println();
+//            }
+
+            parser.setCurrentNode(this);
+
+            // Find recursion when evaluating grammar rules
+            var p = this.parent;
+            while (p != null) {
+                if (this.getClass().equals(p.getClass()) && this.tokenNr == p.getTokenNr())
+                    throw new ParseException("Recursion in " + getClass().getSimpleName() + " at token " + tokenNr);
+                p = p.getParent();
+            }
+
+        }
+    }
 
 
     public void addComment(Node child) {
@@ -110,7 +134,7 @@ public abstract class Node implements NodeInterface, Composable<Node>, HasValue<
 
     @Override
     public String toString() {
-        return String.format("%s(%s)", this.getClass().getSimpleName(), getValue());
+        return String.format("%s(%s,tokenNr=%d)", this.getClass().getSimpleName(), getValue(), tokenNr);
     }
 
     public String toStringRecursive(boolean showType, int indentCount) {

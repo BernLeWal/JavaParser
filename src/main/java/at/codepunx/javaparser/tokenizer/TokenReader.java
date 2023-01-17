@@ -47,6 +47,8 @@ public class TokenReader<T extends TokenTypeInterface> implements Cloneable {
         return it.hasNext();
     }
 
+    public int getNextIndex() { return it.nextIndex(); }
+
     public void setWhitespaceTokenTypes(T[] tokenTypes) {
         whitespaceTokenTypes = Arrays.stream(tokenTypes).toList();
     }
@@ -96,7 +98,7 @@ public class TokenReader<T extends TokenTypeInterface> implements Cloneable {
     private Token<T> next() {
         Token<T> token = it.next();
         if ( skipWhitespaceTokens && whitespaceTokenTypes !=null && !whitespaceTokenTypes.isEmpty()) {
-            while( whitespaceTokenTypes.contains(token.getType()) && it.hasNext() ) {
+            while( token!=null && whitespaceTokenTypes.contains(token.getType()) && it.hasNext() ) {
                 token = it.next();
             }
         }
@@ -106,7 +108,7 @@ public class TokenReader<T extends TokenTypeInterface> implements Cloneable {
     private Token<T> previous() {
         Token<T> token = it.previous();
         if ( skipWhitespaceTokens && whitespaceTokenTypes !=null && !whitespaceTokenTypes.isEmpty()) {
-            while( whitespaceTokenTypes.contains(token.getType()) && it.hasPrevious() ) {
+            while( token!=null && whitespaceTokenTypes.contains(token.getType()) && it.hasPrevious() ) {
                 token = it.previous();
             }
         }

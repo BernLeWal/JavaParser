@@ -1,20 +1,18 @@
 package at.codepunx.javaparser.parser.grammar.declarations;
 
 import at.codepunx.javaparser.parser.ParseException;
+import at.codepunx.javaparser.parser.Parser;
 import at.codepunx.javaparser.parser.grammar.Node;
 import at.codepunx.javaparser.parser.grammar.comments.BlockComment;
 import at.codepunx.javaparser.parser.grammar.comments.JavadocComment;
 import at.codepunx.javaparser.parser.grammar.comments.LineComment;
 import at.codepunx.javaparser.parser.impl.JavaLanguage;
-import at.codepunx.javaparser.tokenizer.TokenReader;
 import at.codepunx.javaparser.tokenizer.impl.JavaTokenType;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static at.codepunx.javaparser.parser.Parser.*;
 
 public class ClassDeclaration extends Node {
 
@@ -29,35 +27,36 @@ public class ClassDeclaration extends Node {
     <class body declarations> ::= <class body declaration> | <class body declarations> <class body declaration>
     <class body declaration> ::= <class member declaration> | <static initializer> | <constructor declaration>
     */
-    public ClassDeclaration(TokenReader<JavaTokenType> reader) throws ParseException {
-        optional(reader, JavadocComment::new).sendTo(this::addComment);
+    public ClassDeclaration(Parser<JavaTokenType> p) throws ParseException {
+        super( p );
+        p.optional( JavadocComment::new).sendTo(this::addComment);
 
-        optional(reader, r -> new ModifierDeclaration(JavaLanguage.Visibility.PUBLIC, reader)).sendTo(n -> setAttribute(n.getValue(), n));
-        optional(reader, r -> new ModifierDeclaration(JavaLanguage.Visibility.PROTECTED, reader)).sendTo(n -> setAttribute(n.getValue(), n));
-        optional(reader, r -> new ModifierDeclaration(JavaLanguage.Visibility.PRIVATE, reader)).sendTo(n -> setAttribute(n.getValue(), n));
+        p.optional( p1 -> new ModifierDeclaration(p, JavaLanguage.Visibility.PUBLIC)).sendTo(n -> setAttribute(n.getValue(), n));
+        p.optional( p1 -> new ModifierDeclaration(p, JavaLanguage.Visibility.PROTECTED)).sendTo(n -> setAttribute(n.getValue(), n));
+        p.optional( p1 -> new ModifierDeclaration(p, JavaLanguage.Visibility.PRIVATE)).sendTo(n -> setAttribute(n.getValue(), n));
 
-        optional(reader, r->new ModifierDeclaration(JavaLanguage.Abstract.ABSTRACT, reader)).sendTo( n->setAttribute(n.getValue(), n));
+        p.optional( p1 -> new ModifierDeclaration(p, JavaLanguage.Abstract.ABSTRACT)).sendTo( n->setAttribute(n.getValue(), n));
 
-        mandatoryToken( reader, JavaTokenType.KEYWORD, "class");
-        mandatoryToken( reader, JavaTokenType.IDENTIFIER).sendTo(this::setValue);
+        p.mandatoryToken( JavaTokenType.KEYWORD, "class");
+        p.mandatoryToken( JavaTokenType.IDENTIFIER).sendTo(this::setValue);
 
-        optional(reader, ExtendsDeclaration::new).sendTo(this::addChild);
-        if (!optional(reader, ImplementsDeclaration::new).isEmpty()) {
-            multiple(this, reader, r -> {
-                optional(reader, r1 -> new ImplementsDeclaration(false, r1)).sendTo(this::addChild);
+        p.optional( ExtendsDeclaration::new).sendTo(this::addChild);
+        if (!p.optional( ImplementsDeclaration::new).isEmpty()) {
+            p.multiple( p1 -> {
+                p.optional(p2 -> new ImplementsDeclaration(p, false)).sendTo(this::addChild);
             });
         }
 
-        mandatoryToken(reader, JavaTokenType.CODE_BLOCK_START);
+        p.mandatoryToken(JavaTokenType.CODE_BLOCK_START);
 
-        multiple(this, reader, r -> {
-            optional(r, LineComment::new).sendTo(this::addComment);
-            optional(r, BlockComment::new).sendTo(this::addComment);
-            optional(r, FieldDeclaration::new).sendTo(this::addChild);
-//            optional(r, MethodDeclaration::new).sendTo(this::addChild);
+        p.multiple( r -> {
+            p.optional( LineComment::new).sendTo(this::addComment);
+            p.optional( BlockComment::new).sendTo(this::addComment);
+            p.optional( FieldDeclaration::new).sendTo(this::addChild);
+//            p.optional( MethodDeclaration::new).sendTo(this::addChild);
         });
 
-//        mandatoryToken(reader, JavaTokenType.CODE_BLOCK_END);
+//        p.mandatoryToken(JavaTokenType.CODE_BLOCK_END);
     }
 
     @Override

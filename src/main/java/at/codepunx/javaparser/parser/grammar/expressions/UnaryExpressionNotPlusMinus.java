@@ -1,11 +1,9 @@
 package at.codepunx.javaparser.parser.grammar.expressions;
 
 import at.codepunx.javaparser.parser.ParseException;
+import at.codepunx.javaparser.parser.Parser;
 import at.codepunx.javaparser.parser.grammar.Node;
-import at.codepunx.javaparser.tokenizer.TokenReader;
 import at.codepunx.javaparser.tokenizer.impl.JavaTokenType;
-
-import static at.codepunx.javaparser.parser.Parser.*;
 
 public class UnaryExpressionNotPlusMinus extends Node {
     /*
@@ -14,18 +12,19 @@ public class UnaryExpressionNotPlusMinus extends Node {
                                          | '!' <unary expression>
                                          | <cast expression>
      */
-    public UnaryExpressionNotPlusMinus(TokenReader<JavaTokenType> reader) throws ParseException {
-        mandatoryOneOf( reader,
+    public UnaryExpressionNotPlusMinus(Parser<JavaTokenType> p) throws ParseException {
+        super( p );
+        p.mandatoryOneOf(  
                 PostfixExpression::new,
                 r->{
-                    mandatoryToken( r, JavaTokenType.OPERATOR, "~").sendTo(this::setValue);
-                    mandatory( r, UnaryExpression::new ).sendTo(this::addChild);
-                    return null;
+                    p.mandatoryToken(  JavaTokenType.OPERATOR, "~").sendTo(this::setValue);
+                    p.mandatory(  UnaryExpression::new ).sendTo(this::addChild);
+                    return this;
                 },
                 r->{
-                    mandatoryToken( r, JavaTokenType.OPERATOR, "!").sendTo(this::setValue);
-                    mandatory( r, UnaryExpression::new ).sendTo(this::addChild);
-                    return null;
+                    p.mandatoryToken(  JavaTokenType.OPERATOR, "!").sendTo(this::setValue);
+                    p.mandatory(  UnaryExpression::new ).sendTo(this::addChild);
+                    return this;
                 },
                 CastExpression::new
         ).sendTo(this::addChild);

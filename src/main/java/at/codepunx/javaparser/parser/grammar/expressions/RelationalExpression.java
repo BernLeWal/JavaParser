@@ -1,11 +1,9 @@
 package at.codepunx.javaparser.parser.grammar.expressions;
 
 import at.codepunx.javaparser.parser.ParseException;
+import at.codepunx.javaparser.parser.Parser;
 import at.codepunx.javaparser.parser.grammar.Node;
-import at.codepunx.javaparser.tokenizer.TokenReader;
 import at.codepunx.javaparser.tokenizer.impl.JavaTokenType;
-
-import static at.codepunx.javaparser.parser.Parser.*;
 
 public class RelationalExpression extends Node {
     /*
@@ -16,38 +14,39 @@ public class RelationalExpression extends Node {
                                 | <relational expression> '>=' <shift expression>
                                 | <relational expression> instanceof <reference type>
      */
-    public RelationalExpression(TokenReader<JavaTokenType> reader) throws ParseException {
-        mandatoryOneOf( reader,
+    public RelationalExpression(Parser<JavaTokenType> p) throws ParseException {
+        super( p );
+        p.mandatoryOneOf(  
                 ShiftExpression::new,
                 r->{
-                    mandatory( r, RelationalExpression::new ).sendTo(this::addChild);
-                    mandatoryToken( r, JavaTokenType.RELATION, "<").sendTo(this::setValue);
-                    mandatory( r, ShiftExpression::new ).sendTo(this::addChild);
-                    return null;
+                    p.mandatory(  RelationalExpression::new ).sendTo(this::addChild);
+                    p.mandatoryToken(  JavaTokenType.RELATION, "<").sendTo(this::setValue);
+                    p.mandatory(  ShiftExpression::new ).sendTo(this::addChild);
+                    return this;
                 },
                 r->{
-                    mandatory( r, RelationalExpression::new ).sendTo(this::addChild);
-                    mandatoryToken( r, JavaTokenType.RELATION, ">").sendTo(this::setValue);
-                    mandatory( r, ShiftExpression::new ).sendTo(this::addChild);
-                    return null;
+                    p.mandatory(  RelationalExpression::new ).sendTo(this::addChild);
+                    p.mandatoryToken(  JavaTokenType.RELATION, ">").sendTo(this::setValue);
+                    p.mandatory(  ShiftExpression::new ).sendTo(this::addChild);
+                    return this;
                 },
                 r->{
-                    mandatory( r, RelationalExpression::new ).sendTo(this::addChild);
-                    mandatoryToken( r, JavaTokenType.RELATION, "<=").sendTo(this::setValue);
-                    mandatory( r, ShiftExpression::new ).sendTo(this::addChild);
-                    return null;
+                    p.mandatory(  RelationalExpression::new ).sendTo(this::addChild);
+                    p.mandatoryToken(  JavaTokenType.RELATION, "<=").sendTo(this::setValue);
+                    p.mandatory(  ShiftExpression::new ).sendTo(this::addChild);
+                    return this;
                 },
                 r->{
-                    mandatory( r, RelationalExpression::new ).sendTo(this::addChild);
-                    mandatoryToken( r, JavaTokenType.RELATION, ">=").sendTo(this::setValue);
-                    mandatory( r, ShiftExpression::new ).sendTo(this::addChild);
-                    return null;
+                    p.mandatory(  RelationalExpression::new ).sendTo(this::addChild);
+                    p.mandatoryToken(  JavaTokenType.RELATION, ">=").sendTo(this::setValue);
+                    p.mandatory(  ShiftExpression::new ).sendTo(this::addChild);
+                    return this;
                 },
                 r->{
-                    mandatory( r, RelationalExpression::new ).sendTo(this::addChild);
-                    mandatoryToken( r, JavaTokenType.KEYWORD, "instanceof").sendTo(this::setValue);
-                    mandatory( r, ShiftExpression::new ).sendTo(this::addChild);
-                    return null;
+                    p.mandatory(  RelationalExpression::new ).sendTo(this::addChild);
+                    p.mandatoryToken(  JavaTokenType.KEYWORD, "instanceof").sendTo(this::setValue);
+                    p.mandatory(  ShiftExpression::new ).sendTo(this::addChild);
+                    return this;
                 }
         ).sendTo(this::addChild);
     }

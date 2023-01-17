@@ -33,8 +33,8 @@ public class JavaParserAppService implements JavaParserAppServiceInterface {
             log.info( String.format("Tokenizer returned %d tokens", tokens.size()) );
             //log.info( tokens.stream().map(t -> t.toString()).collect(Collectors.joining("\n")) );
 
-            JavaParser parser = new JavaParser();
-            var rootNode = parser.parseJavaFile( params.getSourceRootDirectory().getFileName().toString(), tokens );
+            JavaParser parser = new JavaParser( tokens );
+            var rootNode = parser.parseJavaFile( params.getSourceRootDirectory().getFileName().toString() );
             log.info( "Parser returned: \n" + rootNode.toStringRecursive(true, 0));
             log.info( "Done.");
 
