@@ -14,7 +14,7 @@ public class ClassInstanceCreationExpression extends Node {
     public ClassInstanceCreationExpression(Parser<JavaTokenType> p) throws ParseException {
         super( p );
         p.mandatoryToken( JavaTokenType.KEYWORD, "new");
-        p.mandatory( ReferenceType::new ).sendTo(this::addChild);
+        p.mandatory( ReferenceType::new ).sendTo(n->setValue(n.getValue()));
         p.mandatoryToken( JavaTokenType.ROUND_BRACKET_OPEN );
         var firstArgument = p.optional( Expression::new);
         if ( !firstArgument.isEmpty() ) {

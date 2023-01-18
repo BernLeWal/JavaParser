@@ -100,6 +100,7 @@ public abstract class Node implements NodeInterface, Composable<Node>, HasValue<
         return children.stream().filter( n->n.getClass().equals(nodeClass) ).map( n->(T)n ).toList();
     }
 
+
     // implementation HasAttributes<Node>
     @Override
     public void setAttribute(String key, NodeInterface value) {
@@ -155,5 +156,18 @@ public abstract class Node implements NodeInterface, Composable<Node>, HasValue<
             sb.append("\n" + indent + "} ");
         }
         return sb.toString();
+    }
+
+
+    public void simplify() {
+        for ( int i = 0; i < children.size(); i++ ) {
+            var child = children.get(i);
+            if (child != null && child.getCount() == 1 && child.getValue() == null) {
+                children.set(i, child.children.get(0));
+                i--;
+            }
+            else
+                child.simplify();
+        }
     }
 }

@@ -28,7 +28,9 @@ public class JavaParser extends Parser<JavaTokenType> {
             throw new ParseException("No tokens to parse!");
 
         try {
-            return new CompilationUnit(this, javaFileName);
+            CompilationUnit compilationUnit = new CompilationUnit(this, javaFileName);
+            compilationUnit.simplify();
+            return compilationUnit;
         } catch (ParseException e) {
             log.error( e.toString() );
             throw new ParseException(e.getMessage());

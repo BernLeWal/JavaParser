@@ -14,6 +14,7 @@ public class PredecrementExpression extends Node {
         super( p );
         p.mandatoryToken( JavaTokenType.OPERATOR, "-");
         p.mandatoryToken( JavaTokenType.OPERATOR, "-");
+        p.mandatory( UnaryExpression::new ).sendTo(this::addChild);
         setValue("--");
     }
 }

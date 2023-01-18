@@ -21,7 +21,7 @@ public class ArrayCreationExpression extends Node {
         p.mandatoryOneOf(  
                 PrimitiveType::new,
                 ReferenceType::new
-        ).sendTo(this::addChild);
+        ).sendTo(n->setValue(n.getValue()));
         p.mandatoryToken( JavaTokenType.SQUARE_BRACKET_OPEN);
         p.mandatory( Expression::new ).sendTo( this::addChild );
         p.mandatoryToken( JavaTokenType.SQUARE_BRACKET_CLOSE);

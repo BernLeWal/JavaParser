@@ -16,9 +16,5 @@ public class AssignmentExpression extends Node {
                 ConditionalExpression::new,
                 Assignment::new
         ).sendTo(this::addChild);
-
-//        while ( !reader.tryReadToken(JavaTokenType.SEMIKOLON) ) {
-//            System.out.println("Expression: skipped token " + reader.next().getValue());
-//        }
     }
 }

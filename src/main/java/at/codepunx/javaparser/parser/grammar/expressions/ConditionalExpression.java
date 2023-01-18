@@ -9,7 +9,6 @@ public class ConditionalExpression extends Node {
     /*
         <conditional expression> ::= <conditional or expression>
                                 | <conditional or expression> '?' <expression> ':' <conditional expression>
-        <expression> ::= <assignment expression>
      */
     public ConditionalExpression(Parser<JavaTokenType> p) throws ParseException {
         super( p );
